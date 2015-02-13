@@ -1,0 +1,13 @@
+<WindowConfig>
+  <Directory>C:\\Users\\user\\Desktop\\res</Directory>
+  <FramesPerSecond>0</FramesPerSecond>
+  <DeleteImages>true</DeleteImages>
+  <Cleanup>true</Cleanup>
+  <Render>true</Render>
+  <Compress>false</Compress>
+  <CompressQuality>0</CompressQuality>
+  <CompressDirectory>C:\\Users\\user\\Desktop\\compress</CompressDirectory>
+  <Timed>true</Timed>
+  <ShowFPS>false</ShowFPS>
+  <title>Renderer</title>
+</WindowConfig>

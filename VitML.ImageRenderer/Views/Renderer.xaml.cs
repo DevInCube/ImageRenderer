@@ -59,7 +59,8 @@ namespace VitML.ImageRenderer.Views
                     long fps = (long)Math.Round(1000 / (double)millis);
                     this.fpsLbl.Content = fps;
                     this.image1.Source = image;
-                    stopWatch.Restart();
+                    stopWatch.Stop();
+                    stopWatch.Start();//restart
                 }));
             }
             catch (Exception)

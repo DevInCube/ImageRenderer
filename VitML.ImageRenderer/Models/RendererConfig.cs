@@ -13,6 +13,7 @@ namespace VitML.ImageRenderer.Models
         public string Directory { get; set; }
         public uint UpdateFrequency { get; set; }
         public bool DeleteImages { get; set; }
+        public bool Cleanup { get; set; }
         public bool Render { get; set; }
         public bool Compress { get; set; }
         public long CompressQuality { get; set; }
@@ -38,6 +39,7 @@ namespace VitML.ImageRenderer.Models
             info.Add("Directory", this.Directory);
             info.Add("FramesPerSecond", this.UpdateFrequency);
             info.Add("DeleteImages", this.DeleteImages);
+            info.Add("Cleanup", this.Cleanup);
             info.Add("Render", this.Render);
             info.Add("Compress", this.Compress);
             info.Add("CompressQuality", this.CompressQuality);
@@ -51,6 +53,7 @@ namespace VitML.ImageRenderer.Models
             this.Directory = info.Get("Directory");
             this.UpdateFrequency = uint.Parse(info.Get("FramesPerSecond"));
             this.DeleteImages = bool.Parse(info.Get("DeleteImages"));
+            this.Cleanup = bool.Parse(info.Get("Cleanup"));
             this.Render = bool.Parse(info.Get("Render"));
             this.Compress = bool.Parse(info.Get("Compress"));
             this.CompressQuality = long.Parse(info.Get("CompressQuality"));

@@ -38,6 +38,20 @@ namespace VitML.ImageRenderer.Loaders
         {
             this.config = config;
             dirInfo = new DirectoryInfo(config.Directory);
+            if (config.Cleanup)
+            {
+                try
+                {
+                    foreach (FileInfo file in dirInfo.GetFiles())
+                    {
+                        file.Delete();
+                    }
+                }
+                catch (Exception e)
+                {
+                    //
+                }
+            }
             if (config.UpdateFrequency > 0)
                 frameTime = 1000 / config.UpdateFrequency;
             pullThread = new System.Threading.Thread(() => { PullRun(); });
@@ -113,7 +127,7 @@ namespace VitML.ImageRenderer.Loaders
                     {
                         if (IOHelper.IsFileLocked(file))
                             continue;
-                        string timeStr = file.Name.Split('_')[0];
+                        string timeStr = file.Name.Split('.')[0];
                         long currentFrameTime = long.Parse(timeStr);
                         bool render = (currentFrameTime - lastLoadedFrameTime) >= frameTime;
                         if (render)

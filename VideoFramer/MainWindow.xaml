@@ -3,17 +3,27 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="MainWindow" Height="462" Width="645">
     <Grid>
-        <Border Background="Black" Margin="10,65,10,10">
-            <MediaElement Name="VideoControl" 
-              Source="C:\VIT.Projects\Projects\VitML.ImageRenderer\VideoFramer\bin\Debug\my.wmv" >
-            </MediaElement>
-        </Border>
-        <Button Name="startBtn" Content="Start" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Width="75" RenderTransformOrigin="-0.067,0.636"/>
-        <Button Name="stopBtn" Content="Stop" HorizontalAlignment="Left" Margin="90,10,0,0" VerticalAlignment="Top" Width="75"/>
-        <TextBox Name="dirTb" Height="23" Margin="10,37,10,0" TextWrapping="Wrap" 
-                 Text="C:\VIT.Projects\Projects\VitML.ImageRenderer\VitML.ImageRenderer.Application\bin\Debug\res"
-                 VerticalAlignment="Top"/>
-        <Label Content="FPS:" Margin="170,11,0,0" VerticalAlignment="Top" HorizontalAlignment="Left" Width="41"/>
-        <TextBox Name="fpsTb" HorizontalAlignment="Left" Height="23" Margin="216,13,0,0" TextWrapping="Wrap" Text="30" VerticalAlignment="Top" Width="120"/>
+        <DockPanel>
+            <StackPanel DockPanel.Dock="Top" Margin="5">
+                <StackPanel Orientation="Horizontal" >
+                    <Button Name="startBtn" Content="Start" HorizontalAlignment="Left"  VerticalAlignment="Top" Width="75" RenderTransformOrigin="-0.067,0.636"/>
+                    <Button Name="stopBtn" Content="Stop" Margin="5,0,5,0" HorizontalAlignment="Left"  VerticalAlignment="Top" Width="75"/>
+                    <Label Content="FPS:"  VerticalAlignment="Top" HorizontalAlignment="Left"/>
+                    <TextBox Name="fpsTb" HorizontalAlignment="Left" Height="23" TextWrapping="Wrap" Text="30" VerticalAlignment="Top" Width="120"/>
+                </StackPanel>
+                <Label Content="Source:"  VerticalAlignment="Top" HorizontalAlignment="Left"/>
+                <TextBox Name="sourceTb" Height="23"  TextWrapping="Wrap" 
+                     Text="C:\VIT.Projects\_done\VitML.ImageRenderer\VideoFramer\bin\Debug\my.wmv"
+                     VerticalAlignment="Top"/>
+                <Label Content="Output:"  VerticalAlignment="Top" HorizontalAlignment="Left"/>
+                <TextBox Name="dirTb" Height="23" TextWrapping="Wrap" 
+                     Text="C:\Users\user\Desktop\res"
+                     VerticalAlignment="Top"/>
+            </StackPanel>
+            <Border Background="Black" VerticalAlignment="Stretch" Height="Auto">
+                <MediaElement Name="VideoControl" Source="{Binding ElementName=sourceTb, Path=Text}" >
+                </MediaElement>
+            </Border>
+       </DockPanel>
     </Grid>
 </Window>

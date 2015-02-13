@@ -16,6 +16,7 @@ namespace VitML.ImageRenderer.App
 
         private void Main(object sender, StartupEventArgs e)
         {
+
             this.DispatcherUnhandledException += App_DispatcherUnhandledException;
             MainWindow window = new MainWindow();
             window.Show();

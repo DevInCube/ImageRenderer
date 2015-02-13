@@ -39,7 +39,7 @@ namespace VitML.ImageRenderer.App
             this.Closed += MainWindow_Closed;
 
             string exeDir = Directory.GetCurrentDirectory();
-            string configPath = exeDir + "\\VitML.ImageRenderer.App.Config.ini";
+            string configPath = exeDir + "\\config.xml";
             configLoader = new XMLConfigLoader(configPath);
             configLoader.SourceChanged += configLoader_SourceChanged;
             config = configLoader.Load<WindowConfig>();

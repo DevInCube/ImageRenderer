@@ -36,7 +36,7 @@
   <ItemGroup>
     <Reference Include="Dropbox.Api, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\Users\user\Downloads\DropboxPart5\Dropbox.Api\bin\Debug\Dropbox.Api.dll</HintPath>
+      <HintPath>libs\Dropbox.Api.dll</HintPath>
     </Reference>
     <Reference Include="Newtonsoft.Json, Version=4.0.5.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -44,7 +44,7 @@
     </Reference>
     <Reference Include="OAuthProtocol, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>bin\Debug\OAuthProtocol.dll</HintPath>
+      <HintPath>libs\OAuthProtocol.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
