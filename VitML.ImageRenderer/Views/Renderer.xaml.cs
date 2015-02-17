@@ -33,7 +33,7 @@ namespace VitML.ImageRenderer.Views
         private bool isRunning = true;
         private string _FPS;
         private Visibility _FPSVisible;
-        private List<long> fpsList = new List<long>();
+        private List<long> timeList = new List<long>();
 
         public string FPS
         {
@@ -69,6 +69,7 @@ namespace VitML.ImageRenderer.Views
 
         void Renderer_Loaded(object sender, RoutedEventArgs e)
         {
+            stopWatch.Start();
             thread.Start();
         }
 
@@ -89,18 +90,27 @@ namespace VitML.ImageRenderer.Views
             {
                 while (isRunning)
                 {
-                    lock (fpsList)
+                    lock (timeList)
                     {
-                        int val = fpsList.Count > 0 ? (int)Math.Ceiling(fpsList.Average()) : 0;
+                        int val = 0;
+                        if (timeList.Count > 0)
+                        {
+                            double avgMillis = timeList.Average() / (double)TimeSpan.TicksPerMillisecond;
+                            val = (avgMillis > 0) ? (int)Math.Ceiling(100 / avgMillis) : 0;
+                            timeList.Clear();
+                        }
                         Application.Current.Dispatcher.Invoke((Action)(() => {
                             FPS = val.ToString();
-                            fpsList.Clear();
                         }));
                     }
                     Thread.Sleep(500);
                 }
             }
-            catch
+            catch (ThreadInterruptedException)
+            {
+                //
+            }
+            catch (Exception)
             {
                 //
                 return;
@@ -119,18 +129,22 @@ namespace VitML.ImageRenderer.Views
         {
             try
             {
-                long millis = stopWatch.ElapsedMilliseconds;
-                if (millis == 0) millis = 1;
-                long fps = (long)Math.Round(1000 / (double)millis);
-                lock (fpsList)
+                long ticks = stopWatch.ElapsedTicks;
+                stopWatch.Reset();
+                stopWatch.Start();
+                if (ticks == 0) ticks = 1;
+                lock (timeList)
                 {
-                    fpsList.Add(fps);
+                    timeList.Add(ticks);
                 }
                 this.Dispatcher.Invoke((Action)(() =>
                 {
                     this.image1.Source = image;
                 }));
-                stopWatch.Reset();
+            }
+            catch (ThreadInterruptedException)
+            {
+                //
             }
             catch (Exception)
             {

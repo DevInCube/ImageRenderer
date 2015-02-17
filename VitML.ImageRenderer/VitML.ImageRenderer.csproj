@@ -58,6 +58,10 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Controllers\RendererController.cs" />
+    <Compile Include="Core\ImageBuffer.cs" />
+    <Compile Include="Core\ImageItem.cs" />
+    <Compile Include="Core\ImageStorage.cs" />
+    <Compile Include="Core\Renderer.cs" />
     <Compile Include="Extensions\ImageHelper.cs" />
     <Compile Include="Extensions\IOHelper.cs" />
     <Compile Include="Loaders\DirectoryImageLoader.cs" />
@@ -81,6 +85,7 @@
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
+    <Compile Include="ViewModels\ObservableObject.cs" />
     <Compile Include="Views\Renderer.xaml.cs">
       <DependentUpon>Renderer.xaml</DependentUpon>
     </Compile>

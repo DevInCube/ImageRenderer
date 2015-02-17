@@ -137,8 +137,8 @@ namespace VitML.ImageRenderer.Loaders
                 long lastLoadedFrameTime = 0L;
                 while (running)
                 {
-                    int sourceFrameTime = 0;
-                    int targetFrameTime = (int)frameTime;
+                    long sourceFrameTime = 0;
+                    long targetFrameTime = frameTime;
                     FileInfo[] files = dirInfo.GetFiles();
                     foreach (FileInfo file in files)
                     {
@@ -146,14 +146,15 @@ namespace VitML.ImageRenderer.Loaders
                             continue;
                         string timeStr = file.Name.Split('.')[0];
                         long currentFrameTime = long.Parse(timeStr);
-                        bool render = (currentFrameTime - lastLoadedFrameTime) >= frameTime;
+                        long timePassedFromLast = currentFrameTime - lastLoadedFrameTime;
+                        bool render = timePassedFromLast >= frameTime;
                         if (render)
                         {
                             if (lastLoadedFrameTime == 0)
                                 lastLoadedFrameTime = currentFrameTime - 10;
-                            sourceFrameTime = (int)(currentFrameTime - lastLoadedFrameTime);
+                            sourceFrameTime = timePassedFromLast;
                             lastLoadedFrameTime = currentFrameTime;
-                            int showTime;
+                            long showTime;
                             if (sourceFrameTime > targetFrameTime)
                                 showTime = sourceFrameTime;
                             else
