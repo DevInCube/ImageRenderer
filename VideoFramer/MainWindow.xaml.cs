@@ -80,7 +80,7 @@ namespace VideoFramer
                     long now = (long)DateTime.Now.ToUniversalTime().Subtract(
                                     new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc)
                                     ).TotalMilliseconds;
-                    string name = now + "_0_0" + ".jpg";
+                    string name = now + "" + ".jpg";
                     lock (images)
                     {
                         images.Add(new PushImage() { Image = frame, Name = name });

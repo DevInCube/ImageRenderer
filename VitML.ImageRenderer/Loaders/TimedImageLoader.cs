@@ -1,4 +1,5 @@
-﻿using System;
+﻿using NLog;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
@@ -17,12 +18,19 @@ namespace VitML.ImageRenderer.Loaders
     public class TimedImageLoader :  IImageLoader
     {
 
+        Logger logger = LogManager.GetLogger("TimedImageLoader");
+
         public class TimedImage
         {
 
             public BitmapImage Image { get; set; }
             public string Name { get; set; }
             public long ShowTime { get; set; }
+
+            public override string ToString()
+            {
+                return String.Format("{0} : {1}", Name, ShowTime);
+            }
         }
 
         private RendererConfig config;
@@ -83,23 +91,32 @@ namespace VitML.ImageRenderer.Loaders
                         {
                             TimedImage ti = imgBuffer.First();
                             if (ti.ShowTime > withinFramesFactor)
+                            {
                                 withinFramesFactor = ti.ShowTime;
+                            }
                             BitmapImage src = ti.Image;
                             if (config.Render)
                             {
+                                //logger.Trace("Render > {0}", ti);
                                 if (ImageLoaded != null)
                                     ImageLoaded(src);
                             }
                             if (config.Compress)
+                            {
+                                //logger.Trace("Compress > {0}", ti);
                                 CompressImage(src, ti.Name);
+                            }
                             imgBuffer.Remove(ti);
                         }
                     }
-                    int elapsed = (int)sw.ElapsedMilliseconds;
+                    long elapsed = sw.ElapsedMilliseconds;
                     sw.Reset();
                     int delay = (int)(frameTime - elapsed);
-                    if (delay > 0)
-                       System.Threading.Thread.Sleep(delay);
+                    if (delay > 1)
+                    {
+                       
+                        System.Threading.Thread.Sleep(delay);
+                    }
                 }
             }
             catch (System.Threading.ThreadInterruptedException)
@@ -149,6 +166,7 @@ namespace VitML.ImageRenderer.Loaders
                         }
                         if (config.DeleteImages)
                         {
+                            //logger.Trace("Delete > {0}", file);
                             try
                             {
                                 file.Delete();

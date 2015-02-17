@@ -13,7 +13,7 @@
                          VerticalAlignment="Stretch" Width="Auto"/>
         <Grid Name="fpsView" Background="LightGray" Width="Auto" Height="Auto" HorizontalAlignment="Left" VerticalAlignment="Top" 
 			Opacity="0.5" Margin="5">
-            <Label x:Name="fpsLbl" Content="150" HorizontalContentAlignment="Center" VerticalAlignment="Center" 
+            <Label Content="{Binding FPS, FallbackValue=150}" HorizontalContentAlignment="Center" VerticalAlignment="Center" 
 				FontWeight="Bold" FontSize="24" Margin="5,0,5,0" />
         </Grid>
         </Grid>
