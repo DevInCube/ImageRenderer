@@ -1,0 +1,14 @@
+﻿<Window x:Class="VitML.ImageRenderer.App.Views.TestWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="TestWindow" Height="300" Width="300"
+        Closed="Window_Closed">
+    <Grid Background="#333333">
+        <Image Source="{Binding Renderer.Image}"/>
+        <Grid Name="fpsView" Background="LightGray" Width="Auto" Height="Auto" HorizontalAlignment="Left" VerticalAlignment="Top" 
+			Opacity="0.5" Margin="5">
+            <Label Content="{Binding Renderer.FPS, FallbackValue=--}" HorizontalContentAlignment="Center" VerticalAlignment="Center" 
+				FontWeight="Bold" FontSize="24" Margin="5,0,5,0" />
+        </Grid>
+    </Grid>
+</Window>

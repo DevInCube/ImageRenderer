@@ -1,11 +1,11 @@
-﻿using Dropbox.Api;
-using OAuthProtocol;
+﻿
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Timers;
 using System.Windows;
@@ -36,7 +36,6 @@ namespace VideoFramer
         private static string ConsumerSecret = "g5rc3w73pmymf3f";
 
         private int frameTime = 30;
-        private DropboxApi api;
         private System.Threading.Thread dbThread, frameThread;
         private bool running = true;
         private List<PushImage> images = new List<PushImage>();
@@ -93,6 +92,10 @@ namespace VideoFramer
                     System.Threading.Thread.Sleep(delay);
                 }
             }
+            catch (ThreadInterruptedException)
+            {
+                //
+            }
             catch (Exception ee)
             {
                 MessageBox.Show("Frame: " + ee.ToString());
@@ -119,7 +122,7 @@ namespace VideoFramer
                             {
                                 SaveToDirectory(item.Name, item.Image);
                             }
-                            catch (Exception ee)
+                            catch (Exception)
                             {
                                 //MessageBox.Show("SaveToDirectory: " + ee.ToString());
                             }
@@ -140,7 +143,7 @@ namespace VideoFramer
             }
         }
 
-        private static OAuthToken GetAccessToken()
+        /*private static OAuthToken GetAccessToken()
         {
             var oauth = new OAuth();
             var requestToken = oauth.GetRequestToken(new Uri(DropboxRestApi.BaseUri), ConsumerKey, ConsumerSecret);
@@ -148,7 +151,7 @@ namespace VideoFramer
             Process.Start(authorizeUri.AbsoluteUri);
             System.Threading.Thread.Sleep(5000); // Leave some time for the authorization step to complete
             return oauth.GetAccessToken(new Uri(DropboxRestApi.BaseUri), ConsumerKey, ConsumerSecret, requestToken);
-        }
+        }*/
 
         void MainWindow_Loaded(object sender, RoutedEventArgs e)
         {
