@@ -3,6 +3,12 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="TestWindow" Height="300" Width="300"
         Closed="Window_Closed">
+    <DockPanel>
+        <StackPanel Orientation="Horizontal" DockPanel.Dock="Bottom">
+            <Button Content="FpsRunning" IsEnabled="{Binding Renderer.FpsRunning, Mode=OneWay}"/>
+            <Button Content="RenderRunning" IsEnabled="{Binding Renderer.RenderRunning, Mode=OneWay}"/>
+            <Button Content="LoadRunning" IsEnabled="{Binding Renderer.LoadRunning, Mode=OneWay}"/>
+        </StackPanel>
     <Grid Background="#333333">
         <Image Source="{Binding Renderer.Image}"/>
         <Grid Name="fpsView" Background="LightGray" Width="Auto" Height="Auto" HorizontalAlignment="Left" VerticalAlignment="Top" 
@@ -11,4 +17,5 @@
 				FontWeight="Bold" FontSize="24" Margin="5,0,5,0" />
         </Grid>
     </Grid>
+    </DockPanel>
 </Window>

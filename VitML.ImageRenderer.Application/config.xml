@@ -1,7 +1,7 @@
 <WindowConfig>
   <Directory>C:\Users\DevInCube\Desktop\res</Directory>
   <FramesPerSecond>0</FramesPerSecond>
-  <DeleteImages>false</DeleteImages>
+  <DeleteImages>true</DeleteImages>
   <Cleanup>false</Cleanup>
   <Render>true</Render>
   <Compress>false</Compress>

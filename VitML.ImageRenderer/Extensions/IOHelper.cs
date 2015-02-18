@@ -9,6 +9,13 @@ namespace VitML.ImageRenderer.Extensions
     public static class IOHelper
     {
 
+        public static bool IsFileLocked(string filepath)
+        {
+            FileInfo fi = new FileInfo(filepath);
+            if (!fi.Exists) return false;
+            return IsFileLocked(fi);
+        }
+
         public static bool IsFileLocked(FileInfo file)
         {
             FileStream stream = null;

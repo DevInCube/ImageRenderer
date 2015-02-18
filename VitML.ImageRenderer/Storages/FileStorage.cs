@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Windows.Media.Imaging;
 using VitML.ImageRenderer.Core;
+using VitML.ImageRenderer.Extensions;
 
 namespace VitML.ImageRenderer.Storages
 {
@@ -23,7 +24,6 @@ namespace VitML.ImageRenderer.Storages
         {
             NotifyAdded(e.Name);
         }
-
 
         public override void Connect()
         {
@@ -58,7 +58,10 @@ namespace VitML.ImageRenderer.Storages
 
         public override bool Remove(string id)
         {
-            return true;//throw new NotImplementedException();
+            string fullPath = Path.Combine(this.watcher.Path, id);
+            while (IOHelper.IsFileLocked(fullPath)) ;
+            File.Delete(fullPath);
+            return !File.Exists(fullPath);
         }
 
         public override IEnumerable<string> GetImages()
