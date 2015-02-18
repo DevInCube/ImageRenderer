@@ -10,6 +10,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
+using VitML.ImageRenderer.App.ViewModels;
 using VitML.ImageRenderer.Core;
 
 namespace VitML.ImageRenderer.App.Views
@@ -17,9 +18,9 @@ namespace VitML.ImageRenderer.App.Views
     /// <summary>
     /// Interaction logic for TestWindow.xaml
     /// </summary>
-    public partial class TestWindow : Window
+    public partial class MainWindow : Window
     {
-        public TestWindow()
+        public MainWindow()
         {
             InitializeComponent();
         }
@@ -27,7 +28,13 @@ namespace VitML.ImageRenderer.App.Views
         private void Window_Closed(object sender, EventArgs e)
         {
             if (this.DataContext != null)
-                (this.DataContext as ImagePlayer).Stop();
+                (this.DataContext as MainVM).Closed();
+        }
+
+        private void Window_Loaded(object sender, RoutedEventArgs e)
+        {
+            if (this.DataContext != null)
+                (this.DataContext as MainVM).Loaded();
         }
     }
 }

@@ -51,6 +51,16 @@ namespace VideoFramer
             get { return saveImages ? Visibility.Visible : Visibility.Collapsed; }
         }
 
+        public string Video
+        {
+            get { return @"C:\Users\Public\Videos\Sample Videos\WildLife.wmv"; }
+        }
+
+        public string OutputDirectory
+        {
+            get { return @"C:\Users\user\Desktop\res"; }
+        }
+
         public bool SaveImages
         {
             get { return saveImages; }
@@ -83,6 +93,7 @@ namespace VideoFramer
 
         void MainWindow_Closed(object sender, EventArgs e)
         {
+            SaveImages = false;
             running = false;
 
             dbThread.Interrupt();
@@ -105,10 +116,10 @@ namespace VideoFramer
                             {
                                 frame = VideoControl.GetFrame(0.5, 100);
                             }));
-                        long now = (long)DateTime.Now.ToUniversalTime().Subtract(
+                        long ticks = (long)DateTime.Now.ToUniversalTime().Subtract(
                                         new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc)
-                                        ).TotalMilliseconds;
-                        string name = now + "" + ".jpg";
+                                        ).Ticks;
+                        string name = ticks + ".jpg";
                         lock (images)
                         {
                             images.Add(new PushImage() { Image = frame, Name = name });

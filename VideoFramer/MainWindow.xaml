@@ -13,11 +13,11 @@
                 </StackPanel>
                 <Label Content="Source:"  VerticalAlignment="Top" HorizontalAlignment="Left"/>
                 <TextBox Name="sourceTb" Height="23"  TextWrapping="Wrap" 
-                     Text="C:\Users\Public\Videos\Sample Videos\WildLife.wmv"
+                     Text="{Binding Video, Mode=OneWay}"
                      VerticalAlignment="Top"/>
                 <Label Content="Output:"  VerticalAlignment="Top" HorizontalAlignment="Left"/>
                 <TextBox Name="dirTb" Height="23" TextWrapping="Wrap" 
-                     Text="C:\Users\DevInCube\Desktop\res"
+                     Text="{Binding OutputDirectory, Mode=OneWay}"
                      VerticalAlignment="Top"/>
             </StackPanel>
             <Border Background="Black" VerticalAlignment="Stretch" Height="Auto">

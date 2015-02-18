@@ -19,23 +19,12 @@ namespace VitML.ImageRenderer.App
     public partial class App : Application
     {
 
-
         private void Main(object sender, StartupEventArgs e)
         {
-
             this.DispatcherUnhandledException += App_DispatcherUnhandledException;
-            Window window;
-            //window = new MainWindow();
-            window = new TestWindow();
-            var player = new ImagePlayer();
-            window.DataContext = player;
-            string exeDir = Directory.GetCurrentDirectory();
-            string configPath = exeDir + "\\config.xml";
-            var configLoader = new XMLConfigLoader(configPath);
-            WindowConfig config = configLoader.Load<WindowConfig>();
-            player.Setup(config);
+
+            Window window = new MainWindow();
             window.Show();
-            player.Start();
         }
 
         void App_DispatcherUnhandledException(object sender, System.Windows.Threading.DispatcherUnhandledExceptionEventArgs e)

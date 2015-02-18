@@ -42,9 +42,11 @@ namespace VitML.ImageRenderer.Storages
 
         public override BitmapImage Load(string id)
         {
+            string fullPath = Path.Combine(this.watcher.Path, id);
             BitmapImage src = new BitmapImage();
             src.BeginInit();
-            src.UriSource = new Uri(Path.Combine(this.watcher.Path, id), UriKind.Relative);
+            while (IOHelper.IsFileLocked(fullPath));
+            src.UriSource = new Uri(fullPath, UriKind.Relative);
             src.CacheOption = BitmapCacheOption.OnLoad;
             src.EndInit();
             src.Freeze();
