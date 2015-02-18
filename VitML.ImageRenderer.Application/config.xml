@@ -1,5 +1,5 @@
 <WindowConfig>
-  <Directory>C:\Users\DevInCube\Desktop\res</Directory>
+  <Directory>C:\Users\user\Desktop\res</Directory>
   <FramesPerSecond>0</FramesPerSecond>
   <DeleteImages>true</DeleteImages>
   <Cleanup>false</Cleanup>

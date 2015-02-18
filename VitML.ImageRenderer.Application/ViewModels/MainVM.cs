@@ -1,10 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Windows.Input;
 using VitML.ImageRenderer.App.Models;
 using VitML.ImageRenderer.Core;
+using VitML.ImageRenderer.Loaders;
 using VitML.ImageRenderer.ViewModels;
 
 namespace VitML.ImageRenderer.App.ViewModels
@@ -29,16 +32,25 @@ namespace VitML.ImageRenderer.App.ViewModels
 
         public MainVM()
         {
-            /*string exeDir = Directory.GetCurrentDirectory();
-              string configPath = exeDir + "\\config.xml";
-              var configLoader = new XMLConfigLoader(configPath);
-              WindowConfig config = configLoader.Load<WindowConfig>();*/
-            var config = new WindowConfig()
+            WindowConfig config;
+            if (false)
             {
-                Directory = @"C:\Users\user\Desktop\res",
-                DeleteImages = false,
-                UpdateFrequency = 0
-            };
+                string exeDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+                string configPath = Path.Combine(exeDir, "config.xml");
+                var configLoader = new XMLConfigLoader(configPath);
+                config = configLoader.Load<WindowConfig>();
+            }
+            else { 
+                config = new WindowConfig()
+                {
+                    Title = "Test",
+                    Directory = @"C:\Users\user\Desktop\res",
+                    Cleanup = false,
+                    DeleteImages = false,
+                    UpdateFrequency = 0,
+                    ShowFPS = true
+                };
+            }
             this.Setup(config);
         }
 
