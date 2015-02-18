@@ -1,6 +1,7 @@
 ﻿
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -23,7 +24,7 @@ namespace VideoFramer
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
-    public partial class MainWindow : Window
+    public partial class MainWindow : Window, INotifyPropertyChanged
     {
 
         class PushImage
@@ -38,11 +39,33 @@ namespace VideoFramer
         private int frameTime = 30;
         private System.Threading.Thread dbThread, frameThread;
         private bool running = true;
+        private bool saveImages = false;
         private List<PushImage> images = new List<PushImage>();
- 
+
+        public Visibility StartVisible
+        {
+            get { return !saveImages?Visibility.Visible:Visibility.Collapsed;}
+        }
+        public Visibility StopVisible
+        {
+            get { return saveImages ? Visibility.Visible : Visibility.Collapsed; }
+        }
+
+        public bool SaveImages
+        {
+            get { return saveImages; }
+            private set
+            {
+                saveImages = value; OnPropertyChanged("SaveImages");
+                OnPropertyChanged("StartVisible");
+                OnPropertyChanged("StopVisible");
+            }
+        }
+
         public MainWindow()
         {
             InitializeComponent();
+            this.DataContext = this;
             this.Loaded += MainWindow_Loaded;
             this.Closed += MainWindow_Closed;
 
@@ -54,11 +77,14 @@ namespace VideoFramer
 
             frameThread = new System.Threading.Thread(() => { FrameRun(); });
             dbThread = new System.Threading.Thread(() => { SaveImageRun(); });
+            frameThread.Start();
+            dbThread.Start();
         }
 
         void MainWindow_Closed(object sender, EventArgs e)
         {
             running = false;
+
             dbThread.Interrupt();
             frameThread.Interrupt();
         }
@@ -70,25 +96,29 @@ namespace VideoFramer
                 Stopwatch sw = new Stopwatch();
                 while (running)
                 {
-                    sw.Start();
-                    byte[] frame = null;
-                    this.Dispatcher.Invoke((Action)(() =>
-                        {
-                            frame = VideoControl.GetFrame(0.5, 100);
-                        }));
-                    long now = (long)DateTime.Now.ToUniversalTime().Subtract(
-                                    new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc)
-                                    ).TotalMilliseconds;
-                    string name = now + "" + ".jpg";
-                    lock (images)
-                    {
-                        images.Add(new PushImage() { Image = frame, Name = name });
-                    }
                     int delay = frameTime;
-                    int elapsed = (int)sw.ElapsedMilliseconds;
-                    sw.Reset();
-                    delay -= elapsed;
-                    if (delay < 0) delay = 0;
+                    if (saveImages)
+                    {
+                        sw.Start();
+                        byte[] frame = null;
+                        this.Dispatcher.Invoke((Action)(() =>
+                            {
+                                frame = VideoControl.GetFrame(0.5, 100);
+                            }));
+                        long now = (long)DateTime.Now.ToUniversalTime().Subtract(
+                                        new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc)
+                                        ).TotalMilliseconds;
+                        string name = now + "" + ".jpg";
+                        lock (images)
+                        {
+                            images.Add(new PushImage() { Image = frame, Name = name });
+                        }
+
+                        int elapsed = (int)sw.ElapsedMilliseconds;
+                        sw.Reset();
+                        delay -= elapsed;
+                        if (delay < 0) delay = 0;
+                    }
                     System.Threading.Thread.Sleep(delay);
                 }
             }
@@ -136,6 +166,10 @@ namespace VideoFramer
                     sw.Reset();
                 }
             }
+            catch (ThreadInterruptedException)
+            {
+                //
+            }
             catch (Exception ee)
             {
                 MessageBox.Show("DropBox: " + ee.ToString());
@@ -176,13 +210,13 @@ namespace VideoFramer
 
         void stopBtn_Click(object sender, RoutedEventArgs e)
         {
+            SaveImages = false;
             //timer.Stop();
         }
 
         void startBtn_Click(object sender, RoutedEventArgs e)
         {
-            frameThread.Start();
-            dbThread.Start();
+            SaveImages = true;
             int fps = int.Parse(fpsTb.Text);
             frameTime = (int)Math.Round(1000 / (double)fps);
         }
@@ -198,6 +232,14 @@ namespace VideoFramer
                 bw.Write(frame);
                 bw.Close();
             }));
+        }
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        protected void OnPropertyChanged(string name)
+        {
+            if (this.PropertyChanged != null)
+                this.PropertyChanged(this, new PropertyChangedEventArgs(name));
         }
 
     }

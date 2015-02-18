@@ -6,8 +6,8 @@
         <DockPanel>
             <StackPanel DockPanel.Dock="Top" Margin="5">
                 <StackPanel Orientation="Horizontal" >
-                    <Button Name="startBtn" Content="Start" HorizontalAlignment="Left"  VerticalAlignment="Top" Width="75" RenderTransformOrigin="-0.067,0.636"/>
-                    <Button Name="stopBtn" Content="Stop" Margin="5,0,5,0" HorizontalAlignment="Left"  VerticalAlignment="Top" Width="75"/>
+                    <Button Name="startBtn" Visibility="{Binding StartVisible}" Content="Start" Margin="0,0,5,0"  HorizontalAlignment="Left"  VerticalAlignment="Top" Width="75" RenderTransformOrigin="-0.067,0.636"/>
+                    <Button Name="stopBtn" Visibility="{Binding StopVisible}" Content="Stop" Margin="0,0,5,0" HorizontalAlignment="Left"  VerticalAlignment="Top" Width="75"/>
                     <Label Content="FPS:"  VerticalAlignment="Top" HorizontalAlignment="Left"/>
                     <TextBox Name="fpsTb" HorizontalAlignment="Left" Height="23" TextWrapping="Wrap" Text="30" VerticalAlignment="Top" Width="120"/>
                 </StackPanel>
@@ -21,7 +21,7 @@
                      VerticalAlignment="Top"/>
             </StackPanel>
             <Border Background="Black" VerticalAlignment="Stretch" Height="Auto">
-                <MediaElement Name="VideoControl" Source="{Binding ElementName=sourceTb, Path=Text}" >
+                <MediaElement Name="VideoControl" Source="{Binding ElementName=sourceTb, Path=Text}" IsMuted="True">
                 </MediaElement>
             </Border>
        </DockPanel>
