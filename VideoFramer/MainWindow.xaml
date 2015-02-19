@@ -3,28 +3,56 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="MainWindow" Height="462" Width="645">
     <Grid>
-        <DockPanel>
-            <StackPanel DockPanel.Dock="Top" Margin="5">
-                <StackPanel Orientation="Horizontal" >
-                    <Button Name="startBtn" Visibility="{Binding StartVisible}" Content="Start" Margin="0,0,5,0"  HorizontalAlignment="Left"  VerticalAlignment="Top" Width="75" RenderTransformOrigin="-0.067,0.636"/>
-                    <Button Name="stopBtn" Visibility="{Binding StopVisible}" Content="Stop" Margin="0,0,5,0" HorizontalAlignment="Left"  VerticalAlignment="Top" Width="75"/>
-                    <Label Content="FPS:"  VerticalAlignment="Top" HorizontalAlignment="Left"/>
-                    <TextBox Name="fpsTb" HorizontalAlignment="Left" Height="23" TextWrapping="Wrap" Text="30" VerticalAlignment="Top" Width="120"/>
-                </StackPanel>
-                <Label Content="Source:"  VerticalAlignment="Top" HorizontalAlignment="Left"/>
-                <TextBox Name="sourceTb" Height="23"  TextWrapping="Wrap" 
-                     Text="{Binding Video, Mode=OneWay}"
-                     VerticalAlignment="Top"/>
-                <Label Content="Output:"  VerticalAlignment="Top" HorizontalAlignment="Left"/>
-                <TextBox Name="dirTb" Height="23" TextWrapping="Wrap" 
-                     Text="{Binding OutputDirectory, Mode=OneWay}"
-                     VerticalAlignment="Top"/>
-                <CheckBox IsChecked="{Binding OneFileMode}" Content="One file mode"/>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="85"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+        <StackPanel Margin="5" Grid.Column="0" Grid.Row="0" Height="25">
+            <StackPanel Orientation="Horizontal" >
+                <Button Name="startBtn" Visibility="{Binding StartVisible}" Content="Start" Margin="0,0,5,0"  HorizontalAlignment="Left"  VerticalAlignment="Top" Width="75" RenderTransformOrigin="-0.067,0.636"/>
+                <Button Name="stopBtn" Visibility="{Binding StopVisible}" Content="Stop" Margin="0,0,5,0" HorizontalAlignment="Left"  VerticalAlignment="Top" Width="75"/>
             </StackPanel>
-            <Border Background="Black" VerticalAlignment="Stretch" Height="Auto">
-                <MediaElement Name="VideoControl" Source="{Binding ElementName=sourceTb, Path=Text}" IsMuted="True">
-                </MediaElement>
-            </Border>
-       </DockPanel>
+        </StackPanel>
+        <Border Background="Black" VerticalAlignment="Stretch" Height="Auto" Grid.ColumnSpan="2" Grid.Row="1">
+            <Grid>
+                <MediaElement Name="VideoControl" Source="{Binding Video, Mode=OneWay}" IsMuted="True"></MediaElement>
+            </Grid>
+        </Border>
+        <Border Grid.Column="1" Grid.RowSpan="2" VerticalAlignment="Top" BorderBrush="Gray" BorderThickness="0,0,0,0" >
+            <Expander Header="Settings" Padding="5" Height="Auto" Background="White" VerticalAlignment="Top">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Label Content="FPS:"  Margin="5"/>
+                    <Label Grid.Row="1" Content="Quality:"   Margin="5" />
+                    <Label Grid.Row="2" Content="Scale:"   Margin="5" />
+                    <Label Grid.Row="3" Content="Video:" Margin="5" />
+                    <Label Grid.Row="4" Content="Output:" Margin="5" />
+
+                    <TextBox Grid.Column="1" Name="fpsTb" HorizontalAlignment="Left" Height="23" TextWrapping="Wrap" Text="30"  Width="75" Margin="5"/>
+                    <Slider Grid.Row="1" Grid.Column="1" Width="200" Value="{Binding Quality, Mode=TwoWay}" Minimum="1" Maximum="100"  Margin="5" />
+                    <Slider Grid.Row="2" Grid.Column="1" Width="200" Value="{Binding Scale, Mode=TwoWay}" Minimum="1" Maximum="100"  Margin="5" />
+                    <TextBox Grid.Row="3" Grid.Column="1" Height="23"  TextWrapping="Wrap" Text="{Binding Video, Mode=TwoWay}" Grid.ColumnSpan="2" Margin="5"/>
+                    <TextBox Grid.Row="4" Grid.Column="1" Height="23"  TextWrapping="Wrap" Text="{Binding OutputDirectory, Mode=TwoWay}" Grid.ColumnSpan="2" Margin="5"/>
+                    <CheckBox Grid.Row="5" Grid.Column="1" IsChecked="{Binding OneFileMode}" Content="One file mode" Margin="5"/>
+                </Grid>
+            </Expander>
+        </Border>
     </Grid>
 </Window>

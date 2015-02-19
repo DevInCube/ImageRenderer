@@ -141,7 +141,7 @@ namespace VitML.ImageRenderer.Core
                 if (item.Image != null)
                     worker.ReportProgress(0, item);
                 sw.Stop();
-                int fps = (int)((this.useSourceFPS) ? 25 : config.Render.FPS);
+                int fps = (int)((this.useSourceFPS) ? 25 : config.Render.FPS) * 2;
                 int delay = (int)(1000 / (double)fps - sw.ElapsedMilliseconds);
                 if (delay > 1000) delay = 1000;
                 if (delay > 0)

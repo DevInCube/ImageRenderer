@@ -42,6 +42,8 @@ namespace VitML.ImageRenderer.Storages
             return true;
         }
 
+        private long prevTime = 0;
+
         public override ImageItem Load(string id)
         {
             ImageItem item = new ImageItem();
@@ -49,10 +51,13 @@ namespace VitML.ImageRenderer.Storages
             {
                 if (true)
                 {
-                    
+                    long time = File.GetLastWriteTime(imageUri).Ticks;
+                    if (time <= prevTime)
+                        return item;
                     byte[] data = File.ReadAllBytes(imageUri);
                     item.Image = ImageHelper.ToImage(data);
-                    item.Time = DateTime.Now.Ticks;
+                    item.Time = time;
+                    prevTime = item.Time;
                 }
                 else
                 {
@@ -72,7 +77,6 @@ namespace VitML.ImageRenderer.Storages
             catch (IOException)
             {
                 //
-                item.Time = DateTime.Now.Ticks;
             }
             return item;
         }

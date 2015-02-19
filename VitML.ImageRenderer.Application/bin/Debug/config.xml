@@ -22,7 +22,7 @@
   <player>
     <render fps="0" cleanup="false" deleteimages="false" />
     <signal storage="input" filename="0.listen" />
-    <source storage="input" pull="false"/>
+    <source storage="http" pull="true"/>
     <compress storage="" enabled="false" quality="0" />
   </player>
   <window title="Window" showfps="true" />

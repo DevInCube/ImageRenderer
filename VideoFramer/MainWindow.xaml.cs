@@ -41,7 +41,13 @@ namespace VideoFramer
         private bool running = true;
         private bool saveImages = false;
         private bool _OneFileMode = false;
+        private int _Quality = 100;
+        private int _Scale = 50;
+        private string _Video = @"C:\Users\Public\Videos\Sample Videos\WildLife.wmv";
+        private string _Directory = @"C:\Users\user\Desktop\res";
         private List<PushImage> images = new List<PushImage>();
+
+        #region props
 
         public Visibility StartVisible
         {
@@ -54,12 +60,22 @@ namespace VideoFramer
 
         public string Video
         {
-            get { return @"C:\Users\Public\Videos\Sample Videos\WildLife.wmv"; }
+            get { return _Video; }
+            set
+            {
+                _Video = value;
+                OnPropertyChanged("Video");
+            }
         }
 
         public string OutputDirectory
         {
-            get { return @"C:\Users\user\Desktop\res"; }
+            get { return _Directory; }
+            set
+            {
+                _Directory = value;
+                OnPropertyChanged("OutputDirectory");
+            }
         }
 
         public bool SaveImages
@@ -84,6 +100,33 @@ namespace VideoFramer
             }
         }
 
+        public int Quality
+        {
+            get { return _Quality; }
+            set
+            {
+                _Quality = value;
+                OnPropertyChanged("Quality");
+            }
+        }
+        public int Scale
+        {
+            get { return _Scale; }
+            set
+            {
+                _Scale = value;
+                OnPropertyChanged("Scale");
+            }
+        }
+
+        #endregion
+
+        private Queue<PushImage> Frames = new Queue<PushImage>();
+        private readonly object frameLock = new object();
+
+        private BackgroundWorker framer;
+        private BackgroundWorker saver;
+
         public MainWindow()
         {
             InitializeComponent();
@@ -99,8 +142,102 @@ namespace VideoFramer
 
             frameThread = new System.Threading.Thread(() => { FrameRun(); });
             dbThread = new System.Threading.Thread(() => { SaveImageRun(); });
+
+            framer = new BackgroundWorker
+            {
+                WorkerReportsProgress = true,
+                WorkerSupportsCancellation = true
+            };
+            framer.DoWork += framer_DoWork;
+            framer.ProgressChanged += framer_ProgressChanged;
+
+            saver = new BackgroundWorker
+            {
+                WorkerSupportsCancellation = true
+            };
+            saver.DoWork += saver_DoWork;
+        }
+
+        void saver_DoWork(object sender, DoWorkEventArgs e)
+        {
+             BackgroundWorker worker = (BackgroundWorker)sender;
+             while (!worker.CancellationPending)
+             {
+                 lock (frameLock)
+                 {
+                     while (Frames.Count == 0)
+                         Monitor.Wait(frameLock);
+                     PushImage item = Frames.Dequeue();
+                     try
+                     {
+                         if (OneFileMode)
+                         {
+                             string imageFile = "image.jpg";
+                             string temp = "image_tmp.jpg";
+                             SaveToDirectory(temp, item.Image);
+                             MoveToDirectory(temp, imageFile);
+                         }
+                         else
+                         {
+                             SaveToDirectory(item.Name, item.Image);
+                             //var file = api.UploadFile2("dropbox\\imgTest", item.Name, item.Image);
+                         }
+                     }
+                     catch (IOException)
+                     {
+                         //
+                     }
+                 }
+             }
+        }
+
+        void framer_ProgressChanged(object sender, ProgressChangedEventArgs e)
+        {
+            lock (frameLock)
+            {
+                Frames.Enqueue((PushImage)e.UserState);
+                Monitor.PulseAll(frameLock);
+            }
+        }
+
+        void framer_DoWork(object sender, DoWorkEventArgs e)
+        {
+             Stopwatch sw = new Stopwatch();
+             BackgroundWorker worker = (BackgroundWorker)sender;
+             while (!worker.CancellationPending)
+             {
+                 int delay = frameTime;
+                 if (saveImages)
+                 {
+                     sw.Reset();
+                     sw.Start();
+                     byte[] frame = null;
+                     this.Dispatcher.Invoke((Action)(() =>
+                     {
+                         frame = VideoControl.GetFrame((Scale / 100D), Quality);
+                     }));
+                     long ticks = DateTime.Now.Ticks;
+                     string name = ticks + ".jpg";
+                     worker.ReportProgress(0, new PushImage() { Image = frame, Name = name });
+                     sw.Stop();
+                     int elapsed = (int)sw.ElapsedMilliseconds;
+                     delay -= elapsed;
+                     if (delay < 0) delay = 0;
+                 }
+                 if (delay > 0)
+                     System.Threading.Thread.Sleep(delay);
+             }
+        }
+
+        void MainWindow_Loaded(object sender, RoutedEventArgs e)
+        {
             frameThread.Start();
             dbThread.Start();
+
+            VideoControl.Play();
+
+            //framer.RunWorkerAsync();
+            //saver.RunWorkerAsync();
         }
 
         void MainWindow_Closed(object sender, EventArgs e)
@@ -110,6 +247,9 @@ namespace VideoFramer
 
             dbThread.Interrupt();
             frameThread.Interrupt();
+
+            saver.CancelAsync();
+            framer.CancelAsync();
         }
 
         void FrameRun()
@@ -126,7 +266,7 @@ namespace VideoFramer
                         byte[] frame = null;
                         this.Dispatcher.Invoke((Action)(() =>
                             {
-                                frame = VideoControl.GetFrame(0.5, 100);
+                                frame = VideoControl.GetFrame((Scale/100D), Quality);
                             }));
                         long ticks = (long)DateTime.Now.ToUniversalTime().Subtract(
                                         new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc)
@@ -220,11 +360,6 @@ namespace VideoFramer
             return oauth.GetAccessToken(new Uri(DropboxRestApi.BaseUri), ConsumerKey, ConsumerSecret, requestToken);
         }*/
 
-        void MainWindow_Loaded(object sender, RoutedEventArgs e)
-        {
-            VideoControl.Play();
-        }
-
         void VideoControl_MediaEnded(object sender, RoutedEventArgs e)
         {
             try
@@ -259,7 +394,7 @@ namespace VideoFramer
             string dir = "";
             this.Dispatcher.Invoke((Action)(() =>
             {
-                dir = dirTb.Text;
+                dir = OutputDirectory;
             }));
             string path = dir + "\\" + name;
             lock (locker)
@@ -273,13 +408,13 @@ namespace VideoFramer
             string dir = "";
             this.Dispatcher.Invoke((Action)(() =>
             {
-                dir = dirTb.Text;
+                dir = OutputDirectory;
             }));
             string path1 = dir + "\\" + name1;
             string path2 = dir + "\\" + name2;
             lock (locker)
             {
-                File.Replace(path1, path2, dir + "tmp");
+                File.Replace(path1, path2, dir + "\\tmp");
             }
         }
 
