@@ -9,6 +9,7 @@ using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Media.Imaging;
 using VitML.ImageRenderer.Core;
+using VitML.ImageRenderer.Extensions;
 
 namespace VitML.ImageRenderer.Storages
 {
@@ -115,26 +116,9 @@ namespace VitML.ImageRenderer.Storages
             return ftpfullpath;
         }
 
-        public BitmapImage ToImage(byte[] array)
+        public override ImageItem Load(string id)
         {
-            using (var ms = new System.IO.MemoryStream(array))
-            {
-                BitmapImage image = null;
-                Application.Current.Dispatcher.Invoke((Action)(() =>
-                {
-                    image = new BitmapImage();
-                    image.BeginInit();
-                    image.CacheOption = BitmapCacheOption.OnLoad; // here
-                    image.StreamSource = ms;
-                    image.EndInit();
-                }));
-                return image;
-            }
-        }
-
-        public override BitmapImage Load(string id)
-        {
-            BitmapImage image = null;
+            ImageItem image = new ImageItem();
             try
             {
                 string ftpfullpath = CreateURI(id);
@@ -143,7 +127,7 @@ namespace VitML.ImageRenderer.Storages
                 {
                     request.Credentials = _Credentials;
                     byte[] fileData = request.DownloadData(ftpfullpath);
-                    image = ToImage(fileData);
+                    image.Image = ImageHelper.ToImage(fileData);
                 }
             }
             catch (WebException)
@@ -153,7 +137,7 @@ namespace VitML.ImageRenderer.Storages
             return image;
         }
 
-        public override bool Save(string id, System.Windows.Media.Imaging.BitmapImage image)
+        public override bool Save(string id, ImageItem image)
         {
             bool saved = false;
              try

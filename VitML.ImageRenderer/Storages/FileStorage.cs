@@ -40,20 +40,29 @@ namespace VitML.ImageRenderer.Storages
             return true;
         }
 
-        public override BitmapImage Load(string id)
+        public override ImageItem Load(string id)
         {
-            string fullPath = Path.Combine(this.watcher.Path, id);
-            BitmapImage src = new BitmapImage();
-            src.BeginInit();
-            while (IOHelper.IsFileLocked(fullPath));
-            src.UriSource = new Uri(fullPath, UriKind.Relative);
-            src.CacheOption = BitmapCacheOption.OnLoad;
-            src.EndInit();
-            src.Freeze();
-            return src;
+            ImageItem item = new ImageItem();
+            try
+            {
+                string fullPath = Path.Combine(this.watcher.Path, id);
+                BitmapImage src = new BitmapImage();
+                src.BeginInit();
+                while (IOHelper.IsFileLocked(fullPath)) ;
+                src.UriSource = new Uri(fullPath, UriKind.Relative);
+                src.CacheOption = BitmapCacheOption.OnLoad;
+                src.EndInit();
+                src.Freeze();
+                item.Image = src;
+            }
+            catch (IOException)
+            {
+                //
+            }
+            return item;
         }
 
-        public override bool Save(string id, BitmapImage image)
+        public override bool Save(string id, ImageItem image)
         {
             return true;// throw new NotImplementedException();
         }

@@ -38,6 +38,7 @@ namespace VitML.ImageRenderer.Core
         private readonly object removeLock = new object();
         private readonly object timeLock = new object();
 
+        private BackgroundWorker imagePuller;
         private BackgroundWorker imageLoader;
         private BackgroundWorker imageRenderer;
         private BackgroundWorker imageRemover;
@@ -65,6 +66,14 @@ namespace VitML.ImageRenderer.Core
 
         public ImagePlayer()
         {
+            imagePuller = new BackgroundWorker
+            {
+                WorkerReportsProgress = true,
+                WorkerSupportsCancellation = true
+            };
+            imagePuller.DoWork += imagePuller_DoWork;
+            imagePuller.ProgressChanged += imagePuller_ProgressChanged;
+
             imageLoader = new BackgroundWorker
             {
                 WorkerReportsProgress = true,
@@ -107,10 +116,37 @@ namespace VitML.ImageRenderer.Core
             this.config = config;
             imageStorage = CreateStorage(config.Source.Storage);
             signalStorage = CreateStorage(config.Signal.Storage);
-            
+
             useSourceFPS = (config.Render.FPS <= 0);
             if (!useSourceFPS)
                 frameTime = (int)Math.Floor(1000 / (double)config.Render.FPS * TimeSpan.TicksPerMillisecond);
+        }
+
+        void imagePuller_ProgressChanged(object sender, ProgressChangedEventArgs e)
+        {
+            ImageItem item = (ImageItem)e.UserState;
+            ProcessItem(item);
+        }
+
+        void imagePuller_DoWork(object sender, DoWorkEventArgs e)
+        {
+            Stopwatch sw = new Stopwatch();
+            BackgroundWorker worker = (BackgroundWorker)sender;
+            while (!worker.CancellationPending)
+            {
+                ImageItem item;
+                sw.Reset();
+                sw.Start();
+                item = imageStorage.Load(null);
+                if (item.Image != null)
+                    worker.ReportProgress(0, item);
+                sw.Stop();
+                int fps = (int)((this.useSourceFPS) ? 25 : config.Render.FPS);
+                int delay = (int)(1000 / (double)fps - sw.ElapsedMilliseconds);
+                if (delay > 1000) delay = 1000;
+                if (delay > 0)
+                    Thread.Sleep(delay);
+            }     
         }
 
         private ImageStorage CreateStorage(StorageConfiguration storage)
@@ -125,6 +161,11 @@ namespace VitML.ImageRenderer.Core
             {
                 var con = storage.Connection as FtpConnectionConfiguration;
                 st = new FTPStorage(con.Host, storage.Directory, con.UserName, con.Password);
+            }
+            else if (config.Source.Storage.Connection is HttpConnectionConfiguration)
+            {
+                var con = storage.Connection as HttpConnectionConfiguration;
+                st = new HTTPStorage(con.ImageUri, con.TimeUri);
             }
             return st;
         }
@@ -182,7 +223,8 @@ namespace VitML.ImageRenderer.Core
                     }
                     if (timeItems.Count > 0)
                     {
-                        fps = (int)(1000 / (Math.Ceiling(timeItems.Average()) / TimeSpan.TicksPerMillisecond));
+                        double avg = timeItems.Average();
+                        fps = (avg == 0) ? 0 : (int)(1000 / (Math.Ceiling(avg) / TimeSpan.TicksPerMillisecond));
                         timeItems.Clear();
                     }
                 }
@@ -218,7 +260,7 @@ namespace VitML.ImageRenderer.Core
                 if (config.Render.DeleteImages)
                     Remove(item.Name);
                 sw.Stop();
-                item.ShowTime -= sw.ElapsedMilliseconds;
+                item.ShowTime -= sw.ElapsedTicks;
                 long showTime = item.ShowTime;
                 if (showTime > 100 * TimeSpan.TicksPerMillisecond)
                     showTime = 100 * TimeSpan.TicksPerMillisecond;
@@ -259,15 +301,18 @@ namespace VitML.ImageRenderer.Core
                         Monitor.Wait(renderLock);
                     }
                 }
-                item.Image = imageStorage.Load(item.Name);
+                ImageItem ii = imageStorage.Load(item.Name);
+                item.Image = ii.Image;
                 sw.Stop();
-                item.ShowTime -= sw.ElapsedMilliseconds;
+                item.ShowTime -= sw.ElapsedTicks;
                 worker.ReportProgress(0, item);
             }     
         }
 
         public void Start()
         {
+            if (config.Source.DoPull)
+                imagePuller.RunWorkerAsync();
             imageLoader.RunWorkerAsync();
             imageRenderer.RunWorkerAsync();
             imageRemover.RunWorkerAsync();
@@ -290,6 +335,8 @@ namespace VitML.ImageRenderer.Core
 
         public void Stop()
         {
+            if(config.Source.DoPull)
+                imagePuller.CancelAsync();
             imageLoader.CancelAsync();
             imageRenderer.CancelAsync();
             imageRemover.CancelAsync();
@@ -350,7 +397,7 @@ namespace VitML.ImageRenderer.Core
         {
             long itemTime = 0;
             bool res = long.TryParse(id.Split('.')[0], out itemTime);
-            if (!res)
+            if (!res || itemTime <= 0)
                 return;
             long lastProcessTime = ((this.lastTime > 0) ? this.lastTime : (itemTime - frameTime - 1));
             long diffTime = itemTime - lastProcessTime;
@@ -368,10 +415,22 @@ namespace VitML.ImageRenderer.Core
                 showTime = frameTime;
             ImageItem item = new ImageItem();
             item.Name = id;
-            item.Ticks = itemTime;
+            item.Time = itemTime;
             item.ShowTime = showTime;
             this.lastTime = itemTime;
             Load(item);
+        }
+
+        public void ProcessItem(ImageItem item)
+        {
+            long lastProcessTime = ((this.lastTime > 0) ? this.lastTime : (item.Time - frameTime - 1));
+            long diffTime = item.Time - lastProcessTime;
+            long showTime = diffTime;
+            if (!useSourceFPS)
+                showTime = frameTime;
+            item.ShowTime = showTime;
+            this.lastTime = item.Time;
+            Render(item);
         }
     }
 }

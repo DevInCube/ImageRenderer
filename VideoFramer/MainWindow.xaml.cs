@@ -40,6 +40,7 @@ namespace VideoFramer
         private System.Threading.Thread dbThread, frameThread;
         private bool running = true;
         private bool saveImages = false;
+        private bool _OneFileMode = false;
         private List<PushImage> images = new List<PushImage>();
 
         public Visibility StartVisible
@@ -66,9 +67,20 @@ namespace VideoFramer
             get { return saveImages; }
             private set
             {
-                saveImages = value; OnPropertyChanged("SaveImages");
+                saveImages = value;
+                OnPropertyChanged("SaveImages");
                 OnPropertyChanged("StartVisible");
                 OnPropertyChanged("StopVisible");
+            }
+        }
+
+        public bool OneFileMode
+        {
+            get { return _OneFileMode; }
+            set
+            {
+                _OneFileMode = value;
+                OnPropertyChanged("OneFileMode");
             }
         }
 
@@ -161,7 +173,17 @@ namespace VideoFramer
                             PushImage item = images.First();
                             try
                             {
-                                SaveToDirectory(item.Name, item.Image);
+                                if (OneFileMode)
+                                {
+                                    string imageFile = "image.jpg";
+                                    string temp = "image_tmp.jpg";
+                                    SaveToDirectory(temp, item.Image);
+                                    MoveToDirectory(temp, imageFile);
+                                }
+                                else
+                                {
+                                    SaveToDirectory(item.Name, item.Image);
+                                }
                             }
                             catch (Exception)
                             {
@@ -234,16 +256,34 @@ namespace VideoFramer
 
         void SaveToDirectory(string name, byte[] frame)
         {
+            string dir = "";
             this.Dispatcher.Invoke((Action)(() =>
             {
-                string dir = dirTb.Text;
-                string path = dir + "\\" + name;
-                FileStream fileStream = new FileStream(path, FileMode.Create, FileAccess.ReadWrite);
-                BinaryWriter bw = new BinaryWriter(fileStream);
-                bw.Write(frame);
-                bw.Close();
+                dir = dirTb.Text;
             }));
+            string path = dir + "\\" + name;
+            lock (locker)
+            {
+                File.WriteAllBytes(path, frame);
+            }
         }
+
+        void MoveToDirectory(string name1, string name2)
+        {
+            string dir = "";
+            this.Dispatcher.Invoke((Action)(() =>
+            {
+                dir = dirTb.Text;
+            }));
+            string path1 = dir + "\\" + name1;
+            string path2 = dir + "\\" + name2;
+            lock (locker)
+            {
+                File.Replace(path1, path2, dir + "tmp");
+            }
+        }
+
+        readonly object locker = new object();
 
         public event PropertyChangedEventHandler PropertyChanged;
 

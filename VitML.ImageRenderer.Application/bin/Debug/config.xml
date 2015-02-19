@@ -1,0 +1,29 @@
+<configuration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <connections>
+    <connection xsi:type="file" name="fileCon">
+      <disk>C:</disk>
+    </connection>
+    <connection xsi:type="ftp" name="ftpCon">
+      <host>ftp.vit.ua</host>
+      <username>outsource</username>
+      <password>0uts0urc3</password>
+    </connection>
+	<connection xsi:type="http" name="httpCon">
+      <image>C:\Users\user\Desktop\resOne\image.jpg</image>
+	  <time>C:\Users\user\Desktop\resOne\time.txt</time>
+    </connection>
+  </connections>
+  <storages>
+    <storage name="input" connection="fileCon">
+      <directory>\Users\user\Desktop\res</directory>
+    </storage>
+	<storage name="http" connection="httpCon" />
+  </storages>
+  <player>
+    <render fps="0" cleanup="false" deleteimages="false" />
+    <signal storage="input" filename="0.listen" />
+    <source storage="input" pull="false"/>
+    <compress storage="" enabled="false" quality="0" />
+  </player>
+  <window title="Window" showfps="true" />
+</configuration>

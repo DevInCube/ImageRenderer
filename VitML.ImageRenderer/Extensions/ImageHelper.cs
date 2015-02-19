@@ -39,5 +39,23 @@ namespace VitML.ImageRenderer.Extensions
 
             return (Image)b;
         }
+
+        public static System.Windows.Media.Imaging.BitmapImage ToImage(byte[] array)
+        {
+            using (var ms = new System.IO.MemoryStream(array))
+            {
+                System.Windows.Media.Imaging.BitmapImage image = null;
+                System.Windows.Application.Current.Dispatcher.Invoke((Action)(() =>
+                {
+                    image = new System.Windows.Media.Imaging.BitmapImage();
+                    image.BeginInit();
+                    image.CacheOption = System.Windows.Media.Imaging.BitmapCacheOption.OnLoad;
+                    image.StreamSource = ms;
+                    image.EndInit();
+                    image.Freeze();
+                }));
+                return image;
+            }
+        }
     }
 }

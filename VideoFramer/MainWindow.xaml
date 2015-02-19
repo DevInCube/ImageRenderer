@@ -19,6 +19,7 @@
                 <TextBox Name="dirTb" Height="23" TextWrapping="Wrap" 
                      Text="{Binding OutputDirectory, Mode=OneWay}"
                      VerticalAlignment="Top"/>
+                <CheckBox IsChecked="{Binding OneFileMode}" Content="One file mode"/>
             </StackPanel>
             <Border Background="Black" VerticalAlignment="Stretch" Height="Auto">
                 <MediaElement Name="VideoControl" Source="{Binding ElementName=sourceTb, Path=Text}" IsMuted="True">

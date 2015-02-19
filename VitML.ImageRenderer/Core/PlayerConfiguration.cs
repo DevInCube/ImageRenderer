@@ -15,6 +15,7 @@ namespace VitML.ImageRenderer.Core
     [Serializable()]
     [XmlInclude(typeof(FileConnectionConfiguration))]
     [XmlInclude(typeof(FtpConnectionConfiguration))]
+    [XmlInclude(typeof(HttpConnectionConfiguration))]
     public abstract class ConnectionConfiguration
     {
         [XmlAttribute("name")]
@@ -53,6 +54,22 @@ namespace VitML.ImageRenderer.Core
             Host = "";
             UserName = "";
             Password = "";
+        }
+
+    }
+
+    [XmlType("http")]
+    public class HttpConnectionConfiguration : ConnectionConfiguration
+    {
+        [XmlElement("image")]
+        public string ImageUri { get; set; }
+        [XmlElement("time")]
+        public string TimeUri { get; set; }
+
+        public HttpConnectionConfiguration()
+        {
+            ImageUri = "";
+            TimeUri = "";
         }
 
     }
@@ -134,6 +151,9 @@ namespace VitML.ImageRenderer.Core
 
         public class SourceConfiguration : AStorageConfiguration
         {
+
+            [XmlAttribute("pull")]
+            public bool DoPull { get; set; }
 
             public SourceConfiguration()
             {
