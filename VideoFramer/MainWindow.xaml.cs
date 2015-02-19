@@ -17,7 +17,6 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
-using System.Windows.Shapes;
 
 namespace VideoFramer
 {
@@ -44,7 +43,7 @@ namespace VideoFramer
         private int _Quality = 100;
         private int _Scale = 50;
         private string _Video = @"C:\Users\Public\Videos\Sample Videos\WildLife.wmv";
-        private string _Directory = @"C:\Users\user\Desktop\res";
+        private string _Directory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "res");
         private List<PushImage> images = new List<PushImage>();
 
         #region props
@@ -121,6 +120,8 @@ namespace VideoFramer
 
         #endregion
 
+        private readonly object locker = new object();
+
         private Queue<PushImage> Frames = new Queue<PushImage>();
         private readonly object frameLock = new object();
 
@@ -160,34 +161,36 @@ namespace VideoFramer
 
         void saver_DoWork(object sender, DoWorkEventArgs e)
         {
+            Stopwatch sw = new Stopwatch();
              BackgroundWorker worker = (BackgroundWorker)sender;
              while (!worker.CancellationPending)
              {
+                 PushImage item = null;
+                 sw.Start();
                  lock (frameLock)
                  {
-                     while (Frames.Count == 0)
-                         Monitor.Wait(frameLock);
-                     PushImage item = Frames.Dequeue();
-                     try
+                     if (Frames.Count > 0)
+                        item = Frames.Dequeue();
+                 }
+                 if (item != null)
+                 {
+                     if (OneFileMode)
                      {
-                         if (OneFileMode)
-                         {
-                             string imageFile = "image.jpg";
-                             string temp = "image_tmp.jpg";
-                             SaveToDirectory(temp, item.Image);
-                             MoveToDirectory(temp, imageFile);
-                         }
-                         else
-                         {
-                             SaveToDirectory(item.Name, item.Image);
-                             //var file = api.UploadFile2("dropbox\\imgTest", item.Name, item.Image);
-                         }
+                         string imageFile = "image.jpg";
+                         string temp = "image_tmp.jpg";
+                         SaveToDirectory(temp, item.Image);
+                         MoveToDirectory(temp, imageFile);
                      }
-                     catch (IOException)
+                     else
                      {
-                         //
+                         SaveToDirectory(item.Name, item.Image);
+                         //var file = api.UploadFile2("dropbox\\imgTest", item.Name, item.Image);
                      }
                  }
+                 int elapsed = (int)sw.ElapsedMilliseconds;
+                 if (elapsed < frameTime)
+                     System.Threading.Thread.Sleep(frameTime - elapsed);
+                 sw.Reset();
              }
         }
 
@@ -196,7 +199,6 @@ namespace VideoFramer
             lock (frameLock)
             {
                 Frames.Enqueue((PushImage)e.UserState);
-                Monitor.PulseAll(frameLock);
             }
         }
 
@@ -207,10 +209,9 @@ namespace VideoFramer
              while (!worker.CancellationPending)
              {
                  int delay = frameTime;
+                 sw.Start();
                  if (saveImages)
                  {
-                     sw.Reset();
-                     sw.Start();
                      byte[] frame = null;
                      this.Dispatcher.Invoke((Action)(() =>
                      {
@@ -219,11 +220,9 @@ namespace VideoFramer
                      long ticks = DateTime.Now.Ticks;
                      string name = ticks + ".jpg";
                      worker.ReportProgress(0, new PushImage() { Image = frame, Name = name });
-                     sw.Stop();
-                     int elapsed = (int)sw.ElapsedMilliseconds;
-                     delay -= elapsed;
-                     if (delay < 0) delay = 0;
                  }
+                 sw.Reset();
+                 delay -= (int)sw.ElapsedMilliseconds;
                  if (delay > 0)
                      System.Threading.Thread.Sleep(delay);
              }
@@ -311,23 +310,16 @@ namespace VideoFramer
                         if (images.Count > 0)
                         {
                             PushImage item = images.First();
-                            try
+                            if (OneFileMode)
                             {
-                                if (OneFileMode)
-                                {
-                                    string imageFile = "image.jpg";
-                                    string temp = "image_tmp.jpg";
-                                    SaveToDirectory(temp, item.Image);
-                                    MoveToDirectory(temp, imageFile);
-                                }
-                                else
-                                {
-                                    SaveToDirectory(item.Name, item.Image);
-                                }
+                                string imageFile = "image.jpg";
+                                string temp = "image_tmp.jpg";
+                                SaveToDirectory(temp, item.Image);
+                                MoveToDirectory(temp, imageFile);
                             }
-                            catch (Exception)
+                            else
                             {
-                                //MessageBox.Show("SaveToDirectory: " + ee.ToString());
+                                SaveToDirectory(item.Name, item.Image);
                             }
                             //var file = api.UploadFile2("dropbox\\imgTest", item.Name, item.Image);
                             images.Remove(item);
@@ -350,16 +342,6 @@ namespace VideoFramer
             }
         }
 
-        /*private static OAuthToken GetAccessToken()
-        {
-            var oauth = new OAuth();
-            var requestToken = oauth.GetRequestToken(new Uri(DropboxRestApi.BaseUri), ConsumerKey, ConsumerSecret);
-            var authorizeUri = oauth.GetAuthorizeUri(new Uri(DropboxRestApi.AuthorizeBaseUri), requestToken);
-            Process.Start(authorizeUri.AbsoluteUri);
-            System.Threading.Thread.Sleep(5000); // Leave some time for the authorization step to complete
-            return oauth.GetAccessToken(new Uri(DropboxRestApi.BaseUri), ConsumerKey, ConsumerSecret, requestToken);
-        }*/
-
         void VideoControl_MediaEnded(object sender, RoutedEventArgs e)
         {
             try
@@ -379,7 +361,6 @@ namespace VideoFramer
         void stopBtn_Click(object sender, RoutedEventArgs e)
         {
             SaveImages = false;
-            //timer.Stop();
         }
 
         void startBtn_Click(object sender, RoutedEventArgs e)
@@ -391,34 +372,48 @@ namespace VideoFramer
 
         void SaveToDirectory(string name, byte[] frame)
         {
-            string dir = "";
-            this.Dispatcher.Invoke((Action)(() =>
+            try
             {
-                dir = OutputDirectory;
-            }));
-            string path = dir + "\\" + name;
-            lock (locker)
+                string dir = "";
+                this.Dispatcher.Invoke((Action)(() =>
+                {
+                    dir = OutputDirectory;
+                }));
+                string path = dir + "\\" + name;
+                lock (locker)
+                {
+                    File.WriteAllBytes(path, frame);
+                }
+            }
+            catch (IOException)
             {
-                File.WriteAllBytes(path, frame);
+                //
             }
         }
 
         void MoveToDirectory(string name1, string name2)
         {
-            string dir = "";
-            this.Dispatcher.Invoke((Action)(() =>
+            try
             {
-                dir = OutputDirectory;
-            }));
-            string path1 = dir + "\\" + name1;
-            string path2 = dir + "\\" + name2;
-            lock (locker)
+                string dir = "";
+                this.Dispatcher.Invoke((Action)(() =>
+                {
+                    dir = OutputDirectory;
+                }));
+                string path1 = dir + "\\" + name1;
+                string path2 = dir + "\\" + name2;
+                lock (locker)
+                {
+                    if (!File.Exists(path2))
+                        File.Create(path2);
+                    File.Replace(path1, path2, dir + "\\tmp");
+                }
+            }
+            catch (IOException)
             {
-                File.Replace(path1, path2, dir + "\\tmp");
+                //
             }
         }
-
-        readonly object locker = new object();
 
         public event PropertyChangedEventHandler PropertyChanged;
 
@@ -426,6 +421,11 @@ namespace VideoFramer
         {
             if (this.PropertyChanged != null)
                 this.PropertyChanged(this, new PropertyChangedEventArgs(name));
+        }
+
+        private void OpenOutputFolder(object sender, RoutedEventArgs e)
+        {
+            Process.Start(OutputDirectory);
         }
 
     }
@@ -471,4 +471,14 @@ namespace VideoFramer
         }
 
     }
+
+    /*private static OAuthToken GetAccessToken()
+        {
+            var oauth = new OAuth();
+            var requestToken = oauth.GetRequestToken(new Uri(DropboxRestApi.BaseUri), ConsumerKey, ConsumerSecret);
+            var authorizeUri = oauth.GetAuthorizeUri(new Uri(DropboxRestApi.AuthorizeBaseUri), requestToken);
+            Process.Start(authorizeUri.AbsoluteUri);
+            System.Threading.Thread.Sleep(5000); // Leave some time for the authorization step to complete
+            return oauth.GetAccessToken(new Uri(DropboxRestApi.BaseUri), ConsumerKey, ConsumerSecret, requestToken);
+        }*/
 }

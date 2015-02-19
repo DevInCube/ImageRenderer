@@ -42,25 +42,6 @@ namespace VitML.ImageRenderer.App.ViewModels
 
         public MainVM()
         {
-            WindowConfig config;
-            if (false)
-            {
-                string exeDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-                string configPath = Path.Combine(exeDir, "config.xml");
-                var configLoader = new XMLConfigLoader(configPath);
-                config = configLoader.Load<WindowConfig>();
-            }
-            else { 
-                config = new WindowConfig()
-                {
-                    Title = "Test",
-                    Directory = @"C:\Users\user\Desktop\res",
-                    Cleanup = false,
-                    DeleteImages = false,
-                    UpdateFrequency = 0,
-                    ShowFPS = true
-                };
-            }
             string exD = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
             string confPath = Path.Combine(exD, "config.xml");
             string content = File.ReadAllText(confPath);

@@ -49,7 +49,10 @@
                     <Slider Grid.Row="1" Grid.Column="1" Width="200" Value="{Binding Quality, Mode=TwoWay}" Minimum="1" Maximum="100"  Margin="5" />
                     <Slider Grid.Row="2" Grid.Column="1" Width="200" Value="{Binding Scale, Mode=TwoWay}" Minimum="1" Maximum="100"  Margin="5" />
                     <TextBox Grid.Row="3" Grid.Column="1" Height="23"  TextWrapping="Wrap" Text="{Binding Video, Mode=TwoWay}" Grid.ColumnSpan="2" Margin="5"/>
-                    <TextBox Grid.Row="4" Grid.Column="1" Height="23"  TextWrapping="Wrap" Text="{Binding OutputDirectory, Mode=TwoWay}" Grid.ColumnSpan="2" Margin="5"/>
+                    <DockPanel Grid.Row="4" Grid.Column="1" Grid.ColumnSpan="2" Margin="5" >
+                        <Button Content="..." DockPanel.Dock="Right" Width="30" Click="OpenOutputFolder"/>
+                        <TextBox Height="23"  TextWrapping="Wrap" Text="{Binding OutputDirectory, Mode=TwoWay}"/>
+                    </DockPanel>
                     <CheckBox Grid.Row="5" Grid.Column="1" IsChecked="{Binding OneFileMode}" Content="One file mode" Margin="5"/>
                 </Grid>
             </Expander>
