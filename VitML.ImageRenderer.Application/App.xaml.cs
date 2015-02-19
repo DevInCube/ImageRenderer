@@ -5,6 +5,7 @@ using System.Data;
 using System.IO;
 using System.Linq;
 using System.Windows;
+using System.Xml.Serialization;
 using VitML.ImageRenderer.App.Models;
 using VitML.ImageRenderer.App.Views;
 using VitML.ImageRenderer.Core;
@@ -23,6 +24,13 @@ namespace VitML.ImageRenderer.App
         {
             this.DispatcherUnhandledException += App_DispatcherUnhandledException;
 
+
+            /*Configuration c = new Configuration();
+            c.Connections.Add(new FileConnectionConfiguration());
+            c.Connections.Add(new FtpConnectionConfiguration());
+            c.Storages.Add(new StorageConfiguration());
+            string res = SerializeObject(c);*/
+
             Window window = new MainWindow();
             window.Show();
         }
@@ -31,5 +39,7 @@ namespace VitML.ImageRenderer.App
         {
             MessageBox.Show(e.Exception.ToString());
         }
+
     }
+
 }

@@ -53,9 +53,25 @@ namespace VitML.ImageRenderer.Storages
             return src;
         }
 
-        public override bool Save(string id, System.Windows.Media.Imaging.BitmapImage image)
+        public override bool Save(string id, BitmapImage image)
         {
             return true;// throw new NotImplementedException();
+        }
+
+        public override bool Save(string id, byte[] data)
+        {
+            bool saved = false;
+            try
+            {
+                string path = Path.Combine(this.watcher.Path, id);
+                File.WriteAllBytes(path, data);
+                saved = true;
+            }
+            catch (Exception)
+            {
+                //
+            }
+            return saved;
         }
 
         public override bool Remove(string id)

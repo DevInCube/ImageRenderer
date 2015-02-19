@@ -17,6 +17,7 @@ namespace VitML.ImageRenderer.Core
         public abstract bool IsAvailable(string id);
         public abstract BitmapImage Load(string id);
         public abstract bool Save(string id, BitmapImage image);
+        public abstract bool Save(string id, byte[] data);
         public abstract bool Remove(string id);
 
         protected void NotifyAdded(string id)

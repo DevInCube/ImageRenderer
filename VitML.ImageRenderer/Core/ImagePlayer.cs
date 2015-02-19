@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -21,11 +22,11 @@ namespace VitML.ImageRenderer.Core
         private long lastTime = 0;
 
         private int _FPS;
-        private bool _ShowFPS;
         private BitmapImage _Image;
 
+        private ImageStorage signalStorage;
         private ImageStorage imageStorage;
-        private RendererConfig config;
+        private PlayerConfiguration config;
 
         private Queue<ImageItem> loadItems = new Queue<ImageItem>();
         private Queue<ImageItem> renderItems = new Queue<ImageItem>();
@@ -59,15 +60,6 @@ namespace VitML.ImageRenderer.Core
             {
                 _FPS = value;
                 OnPropertyChanged("FPS");
-            }
-        }
-        public bool ShowFPS
-        {
-            get { return _ShowFPS; }
-            private set
-            {
-                _ShowFPS = value;
-                OnPropertyChanged("ShowFPS");
             }
         }
 
@@ -110,16 +102,31 @@ namespace VitML.ImageRenderer.Core
             gcCleaner.DoWork += gcCleaner_DoWork;
         }
 
-        public void Setup(RendererConfig config)
+        public void Setup(PlayerConfiguration config)
         {
             this.config = config;
-            var file = new FileStorage(config.Directory);
-            var ftp = new FTPStorage("ftp.vit.ua", "/out", "outsource", "0uts0urc3");
-            imageStorage = ftp;
-            useSourceFPS = (config.UpdateFrequency <= 0);
+            imageStorage = CreateStorage(config.Source.Storage);
+            signalStorage = CreateStorage(config.Signal.Storage);
+            
+            useSourceFPS = (config.Render.FPS <= 0);
             if (!useSourceFPS)
-                frameTime = (int)Math.Floor(1000 / (double)config.UpdateFrequency * TimeSpan.TicksPerMillisecond);
-            this.ShowFPS = config.ShowFPS;
+                frameTime = (int)Math.Floor(1000 / (double)config.Render.FPS * TimeSpan.TicksPerMillisecond);
+        }
+
+        private ImageStorage CreateStorage(StorageConfiguration storage)
+        {
+            ImageStorage st = null;
+            if (storage.Connection is FileConnectionConfiguration)
+            {
+                var con = storage.Connection as FileConnectionConfiguration;
+                st = new FileStorage(Path.Combine(con.Disk, storage.Directory));
+            }
+            else if (config.Source.Storage.Connection is FtpConnectionConfiguration)
+            {
+                var con = storage.Connection as FtpConnectionConfiguration;
+                st = new FTPStorage(con.Host, storage.Directory, con.UserName, con.Password);
+            }
+            return st;
         }
 
         void gcCleaner_DoWork(object sender, DoWorkEventArgs e)
@@ -168,7 +175,7 @@ namespace VitML.ImageRenderer.Core
                 {
                     if (!useSourceFPS)
                     {
-                        while (timeItems.Count < config.UpdateFrequency)
+                        while (timeItems.Count < config.Render.FPS)
                         {
                             Monitor.Wait(timeLock);
                         }
@@ -208,7 +215,7 @@ namespace VitML.ImageRenderer.Core
                     Monitor.PulseAll(renderLock);
                 }
                 worker.ReportProgress(0, item.Image);
-                if (config.DeleteImages)
+                if (config.Render.DeleteImages)
                     Remove(item.Name);
                 sw.Stop();
                 item.ShowTime -= sw.ElapsedMilliseconds;
@@ -271,12 +278,14 @@ namespace VitML.ImageRenderer.Core
             IEnumerable<string> items = imageStorage.GetImages();
             foreach (var item in items)
             {
-                if (config.Cleanup)
+                if (config.Render.CleanUp)
                     Remove(item);
                 else
                     ProcessItem(item);
             }
             imageStorage.ImageAdded += imageStorage_ImageAdded;
+            signalStorage.Connect();
+            signalStorage.Save(config.Signal.FileName, new byte[0]);
         }
 
         public void Stop()
@@ -289,6 +298,9 @@ namespace VitML.ImageRenderer.Core
 
             imageStorage.Disconnect();
             imageStorage.ImageAdded -= imageStorage_ImageAdded;
+
+            signalStorage.Remove(config.Signal.FileName);
+            signalStorage.Disconnect();
         }
 
         protected void Load(ImageItem item)
@@ -336,14 +348,17 @@ namespace VitML.ImageRenderer.Core
 
         private void ProcessItem(string id)
         {
-            long itemTime = long.Parse(id.Split('.')[0]);
+            long itemTime = 0;
+            bool res = long.TryParse(id.Split('.')[0], out itemTime);
+            if (!res)
+                return;
             long lastProcessTime = ((this.lastTime > 0) ? this.lastTime : (itemTime - frameTime - 1));
             long diffTime = itemTime - lastProcessTime;
             if (!useSourceFPS)
             {
                 if (diffTime < frameTime)
                 {
-                    if (config.DeleteImages)
+                    if (config.Render.DeleteImages)
                         Remove(id);
                     return;
                 }

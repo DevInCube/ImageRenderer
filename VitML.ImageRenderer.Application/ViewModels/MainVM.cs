@@ -16,6 +16,7 @@ namespace VitML.ImageRenderer.App.ViewModels
     {
 
         private ImagePlayer _Player = new ImagePlayer();
+        private bool _ShowFPS;
         private string _WindowTitle;
 
         public string WindowTitle
@@ -25,6 +26,15 @@ namespace VitML.ImageRenderer.App.ViewModels
             {
                 _WindowTitle = value;
                 OnPropertyChanged("WindowTitle");
+            }
+        }
+        public bool ShowFPS
+        {
+            get { return _ShowFPS; }
+            private set
+            {
+                _ShowFPS = value;
+                OnPropertyChanged("ShowFPS");
             }
         }
 
@@ -51,13 +61,19 @@ namespace VitML.ImageRenderer.App.ViewModels
                     ShowFPS = true
                 };
             }
-            this.Setup(config);
+            string exD = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+            string confPath = Path.Combine(exD, "config.xml");
+            string content = File.ReadAllText(confPath);
+            Configuration conf = Configuration.Parse(content);
+            conf.Initialize();
+            this.Setup(conf);
         }
 
-        public void Setup(WindowConfig config)
+        public void Setup(Configuration config)
         {
-            this.WindowTitle = config.Title;
-            Player.Setup(config);
+            this.WindowTitle = config.Window.Title;
+            this.ShowFPS = config.Window.ShowFPS;
+            Player.Setup(config.Player);
         }
 
         public void Loaded()

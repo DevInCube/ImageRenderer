@@ -186,5 +186,24 @@ namespace VitML.ImageRenderer.Storages
             }
             return removed;
         }
+
+        public override bool Save(string id, byte[] buffer)
+        {
+            try
+            {
+                WebRequest request = WebRequest.Create(Directory + "/" + id);
+                request.Method = WebRequestMethods.Ftp.UploadFile;
+                request.Credentials = _Credentials;
+                Stream reqStream = request.GetRequestStream();
+                reqStream.Write(buffer, 0, buffer.Length);
+                reqStream.Close();
+                return true;
+            }
+            catch (Exception e)
+            {
+                //
+            }
+            return false;
+        }
     }
 }

@@ -40,12 +40,17 @@ namespace VitML.ImageRenderer.Storages
             throw new NotImplementedException();
         }
 
-        public override bool Save(string id, System.Windows.Media.Imaging.BitmapImage image)
+        public override bool Save(string id, BitmapImage image)
         {
             throw new NotImplementedException();
         }
 
         public override bool Remove(string id)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override bool Save(string id, byte[] data)
         {
             throw new NotImplementedException();
         }

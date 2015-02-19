@@ -1,13 +1,25 @@
-<WindowConfig>
-  <Directory>C:\Users\user\Desktop\res</Directory>
-  <FramesPerSecond>0</FramesPerSecond>
-  <DeleteImages>true</DeleteImages>
-  <Cleanup>false</Cleanup>
-  <Render>true</Render>
-  <Compress>false</Compress>
-  <CompressQuality>0</CompressQuality>
-  <CompressDirectory>C:\\Users\\user\\Desktop\\compress</CompressDirectory>
-  <Timed>true</Timed>
-  <ShowFPS>false</ShowFPS>
-  <title>Renderer</title>
-</WindowConfig>
+<?xml version="1.0" encoding="utf-16"?>
+<configuration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <connections>
+    <connection xsi:type="file" name="fileCon">
+      <disk>C:</disk>
+    </connection>
+    <connection xsi:type="ftp" name="ftpCon">
+      <host>ftp.vit.ua</host>
+      <username>outsource</username>
+      <password>0uts0urc3</password>
+    </connection>
+  </connections>
+  <storages>
+    <storage name="input" connection="ftpCon">
+      <directory>/out</directory>
+    </storage>
+  </storages>
+  <player>
+    <render fps="0" cleanup="false" deleteimages="false" />
+    <signal storage="input" filename="0.listen" />
+    <source storage="input" />
+    <compress storage="" enabled="false" quality="0" />
+  </player>
+  <window title="Window" showfps="true" />
+</configuration>

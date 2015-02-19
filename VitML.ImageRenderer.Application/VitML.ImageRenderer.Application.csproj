@@ -54,6 +54,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Models\Configuration.cs" />
     <Compile Include="ViewModels\MainVM.cs" />
     <Compile Include="Views\Converters\BoolToVis.cs" />
     <Compile Include="Views\PlayerControl.xaml.cs">
