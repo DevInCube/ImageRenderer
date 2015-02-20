@@ -3,14 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Xml.Serialization;
+using VitML.ImageRenderer.Configurations;
 
 namespace VitML.ImageRenderer.Core
 {
-
-    public interface IObjectProvider
-    {
-        T GetObject<T>(string key);
-    }
 
     [Serializable()]
     [XmlInclude(typeof(FileConnectionConfiguration))]

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using NLog;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -13,6 +14,8 @@ namespace VitML.ImageRenderer.Storages
 {
     public class HTTPStorage : ImageStorage
     {
+
+        Logger logger = LogManager.GetLogger("HTTPStorage");
 
         private string imageUri;
         private string timeUri;
@@ -65,6 +68,11 @@ namespace VitML.ImageRenderer.Storages
                 {
                     WebClient myWebClient = new WebClient();
                     byte[] imageBuf = myWebClient.DownloadData(imageUri);
+                    if (imageBuf.Length == 0)
+                    {
+                        logger.Error("image buf is 0");
+                        return item;
+                    }
                     byte[] timeBuf = myWebClient.DownloadData(timeUri);
                     timeStr = System.Text.Encoding.UTF8.GetString(timeBuf);
                     long timeStamp = long.Parse(timeStr);
@@ -82,7 +90,7 @@ namespace VitML.ImageRenderer.Storages
             }
             catch (FormatException fe)
             {
-                MessageBox.Show(timeStr);
+                logger.Error("timestr format exception `{0}`", timeStr);
             }
             catch (NotSupportedException)
             {

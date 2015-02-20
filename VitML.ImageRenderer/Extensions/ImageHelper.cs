@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Drawing2D;
+using System.IO;
 using System.Linq;
 using System.Text;
 
@@ -40,9 +41,9 @@ namespace VitML.ImageRenderer.Extensions
             return (Image)b;
         }
 
-        public static System.Windows.Media.Imaging.BitmapImage ToImage(byte[] array)
+        public static System.Windows.Media.Imaging.BitmapImage ToImage(byte[] bytes)
         {
-            using (var ms = new System.IO.MemoryStream(array))
+            using (Stream ms = new System.IO.MemoryStream(bytes))
             {
                 System.Windows.Media.Imaging.BitmapImage image = null;
                 System.Windows.Application.Current.Dispatcher.Invoke((Action)(() =>

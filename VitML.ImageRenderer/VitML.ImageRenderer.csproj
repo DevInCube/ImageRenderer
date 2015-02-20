@@ -57,13 +57,15 @@
     <Reference Include="PresentationFramework" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Configurations\IObjectProvider.cs" />
     <Compile Include="Controllers\RendererController.cs" />
     <Compile Include="Core\ImageItem.cs" />
     <Compile Include="Core\ImagePlayer.cs" />
     <Compile Include="Core\ImageStorage.cs" />
-    <Compile Include="Core\PlayerConfiguration.cs" />
+    <Compile Include="Configurations\PlayerConfiguration.cs" />
     <Compile Include="Extensions\ImageHelper.cs" />
     <Compile Include="Extensions\IOHelper.cs" />
+    <Compile Include="Extensions\SerializationHelper.cs" />
     <Compile Include="Loaders\DirectoryImageLoader.cs" />
     <Compile Include="Loaders\IConfigLoader.cs" />
     <Compile Include="Loaders\IImageLoader.cs" />

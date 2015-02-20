@@ -7,7 +7,9 @@ using System.Runtime.Serialization;
 using System.Text;
 using System.Xml.Linq;
 using System.Xml.Serialization;
+using VitML.ImageRenderer.Configurations;
 using VitML.ImageRenderer.Core;
+using VitML.ImageRenderer.Extensions;
 
 namespace VitML.ImageRenderer.App.Models
 {
@@ -41,28 +43,9 @@ namespace VitML.ImageRenderer.App.Models
             Player.Initialize(this as IObjectProvider);
         }
 
-        public static string SerializeObject<T>(T toSerialize)
-        {
-            XmlSerializer xmlSerializer = new XmlSerializer(toSerialize.GetType());
-
-            using (StringWriter textWriter = new StringWriter())
-            {
-                xmlSerializer.Serialize(textWriter, toSerialize);
-                return textWriter.ToString();
-            }
-        }
-
-        public static T DeserializeObject<T>(string xml)
-        {
-            XmlSerializer serializer = new XmlSerializer(typeof(T));
-
-            MemoryStream memStream = new MemoryStream(Encoding.UTF8.GetBytes(xml));
-            return (T)serializer.Deserialize(memStream);
-        }
-
         public static Configuration Parse(string content)
         {
-            return DeserializeObject<Configuration>(content);
+            return SerializationHelper.DeserializeObject<Configuration>(content);
         }
 
         public T GetObject<T>(string key)
