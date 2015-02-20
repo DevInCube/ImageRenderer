@@ -10,6 +10,7 @@ namespace VitML.ImageRenderer.Core
 
     [Serializable()]
     [XmlInclude(typeof(FileConnectionConfiguration))]
+    [XmlInclude(typeof(FilePassiveConnectionConfiguration))]
     [XmlInclude(typeof(FtpConnectionConfiguration))]
     [XmlInclude(typeof(HttpConnectionConfiguration))]
     public abstract class ConnectionConfiguration
@@ -32,6 +33,18 @@ namespace VitML.ImageRenderer.Core
         public FileConnectionConfiguration()
         {
             Disk = "C:";
+        }
+    }
+
+    [XmlType("file2")]
+    public class FilePassiveConnectionConfiguration : ConnectionConfiguration
+    {
+        [XmlElement("image")]
+        public string ImageUri { get; set; }
+
+        public FilePassiveConnectionConfiguration()
+        {
+            ImageUri = "";
         }
     }
 

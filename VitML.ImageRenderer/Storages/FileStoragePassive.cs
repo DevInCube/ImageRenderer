@@ -1,11 +1,9 @@
 ﻿using NLog;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
-using System.Net.Cache;
 using System.Text;
 using System.Windows;
 using System.Windows.Media.Imaging;
@@ -14,22 +12,15 @@ using VitML.ImageRenderer.Extensions;
 
 namespace VitML.ImageRenderer.Storages
 {
-    public class HTTPStorage : ImageStorage
+    public class FileStoragePassive : ImageStorage
     {
 
-        Logger logger = LogManager.GetLogger("HTTPStorage");
-        Stopwatch sw = new Stopwatch();
-
-        private WebClient client = new WebClient();
-
         private string imageUri;
-        private string timeUri;
-        private long lastImageTime = 0;
+        private long prevTime = 0;
 
-        public HTTPStorage(string fileUri, string timeUri)
+        public FileStoragePassive(string fileUri)
         {
             this.imageUri = fileUri;
-            this.timeUri = timeUri;
         }
 
         public override ImageItem Load(string id)
@@ -37,25 +28,13 @@ namespace VitML.ImageRenderer.Storages
             ImageItem item = new ImageItem();
             try
             {
-                sw.Reset();
-                sw.Start();
-                byte[] timeBuf = client.DownloadData(timeUri);
-                string timeStr = System.Text.Encoding.UTF8.GetString(timeBuf);
-                long timeStamp = 0;
-                bool parsed = long.TryParse(timeStr, out timeStamp);
-                if (!parsed || timeStamp == lastImageTime)
+                long time = File.GetLastWriteTime(imageUri).Ticks;
+                if (time <= prevTime)
                     return item;
-                lastImageTime = timeStamp;
-                byte[] imageBuf = client.DownloadData(imageUri);
-                logger.Trace(sw.ElapsedTicks);
-                if (imageBuf == null || imageBuf.Length == 0)
-                {
-                    return item;
-                }
-                item.ImageData = imageBuf;
-                item.Time = timeStamp;
+                item.ImageData = File.ReadAllBytes(imageUri);
+                item.Time = time;
             }
-            catch (WebException)
+            catch (IOException)
             {
                 //
             }

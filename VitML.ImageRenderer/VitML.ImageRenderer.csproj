@@ -91,6 +91,7 @@
     <Compile Include="Storages\FTPItem.cs" />
     <Compile Include="Storages\FTPStorage.cs" />
     <Compile Include="Storages\FTPFileSystemWatcher.cs" />
+    <Compile Include="Storages\FileStoragePassive.cs" />
     <Compile Include="Storages\HTTPStorage.cs" />
     <Compile Include="ViewModels\ObservableObject.cs" />
     <Compile Include="Views\Renderer.xaml.cs">

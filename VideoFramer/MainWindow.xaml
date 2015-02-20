@@ -56,7 +56,7 @@
                     <Label Grid.Row="3" Content="Video:" Margin="5" />
                     <Label Grid.Row="4" Content="Output:" Margin="5" />
 
-                    <TextBox Grid.Column="1" Name="fpsTb" HorizontalAlignment="Left" Height="23" TextWrapping="Wrap" Text="30"  Width="75" Margin="5"/>
+                    <TextBox Grid.Column="1" Text="{Binding FPS, Mode=TwoWay,UpdateSourceTrigger=LostFocus}" HorizontalAlignment="Left" Height="23" TextWrapping="Wrap"  Width="75" Margin="5"/>
                     <Slider Grid.Row="1" Grid.Column="1" Width="200" Value="{Binding Quality, Mode=TwoWay}" Minimum="1" Maximum="100"  Margin="5" />
                     <Slider Grid.Row="2" Grid.Column="1" Width="200" Value="{Binding Scale, Mode=TwoWay}" Minimum="1" Maximum="100"  Margin="5" />
                     <TextBox Grid.Row="3" Grid.Column="1" Height="23"  TextWrapping="Wrap" Text="{Binding Video, Mode=TwoWay}" Grid.ColumnSpan="2" Margin="5"/>

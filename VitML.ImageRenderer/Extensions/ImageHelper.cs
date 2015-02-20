@@ -1,5 +1,7 @@
-﻿using System;
+﻿using NLog;
+using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.IO;
@@ -10,6 +12,9 @@ namespace VitML.ImageRenderer.Extensions
 {
     public static class ImageHelper
     {
+
+        static Logger logger = LogManager.GetLogger("ImageHelper");
+        static Stopwatch sw = new Stopwatch();
 
         public static Image ResizeImage(Image imgToResize, Size size)
         {
@@ -43,18 +48,28 @@ namespace VitML.ImageRenderer.Extensions
 
         public static System.Windows.Media.Imaging.BitmapImage ToImage(byte[] bytes)
         {
+            sw.Reset();
+            sw.Start();
             using (Stream ms = new System.IO.MemoryStream(bytes))
             {
                 System.Windows.Media.Imaging.BitmapImage image = null;
-                System.Windows.Application.Current.Dispatcher.Invoke((Action)(() =>
+                try 
                 {
-                    image = new System.Windows.Media.Imaging.BitmapImage();
-                    image.BeginInit();
-                    image.CacheOption = System.Windows.Media.Imaging.BitmapCacheOption.OnLoad;
-                    image.StreamSource = ms;
-                    image.EndInit();
-                    image.Freeze();
-                }));
+                    System.Windows.Application.Current.Dispatcher.Invoke((Action)(() =>
+                    {
+                        image = new System.Windows.Media.Imaging.BitmapImage();
+                        image.BeginInit();
+                        image.CacheOption = System.Windows.Media.Imaging.BitmapCacheOption.OnLoad;
+                        image.StreamSource = ms;
+                        image.EndInit();
+                        image.Freeze();
+                    }));
+                }
+                catch (NullReferenceException)
+                {
+                    //
+                }
+                //logger.Trace(sw.ElapsedTicks);
                 return image;
             }
         }

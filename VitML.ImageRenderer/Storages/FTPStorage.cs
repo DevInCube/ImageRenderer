@@ -126,8 +126,7 @@ namespace VitML.ImageRenderer.Storages
                 using (WebClient request = new WebClient())
                 {
                     request.Credentials = _Credentials;
-                    byte[] fileData = request.DownloadData(ftpfullpath);
-                    image.Image = ImageHelper.ToImage(fileData);
+                    image.ImageData = request.DownloadData(ftpfullpath);
                 }
             }
             catch (WebException)

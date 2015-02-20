@@ -1,4 +1,5 @@
-﻿using System;
+﻿using NLog;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -8,6 +9,7 @@ using System.Text;
 using System.Threading;
 using System.Windows;
 using System.Windows.Media.Imaging;
+using VitML.ImageRenderer.Extensions;
 using VitML.ImageRenderer.Models;
 using VitML.ImageRenderer.Storages;
 using VitML.ImageRenderer.ViewModels;
@@ -16,34 +18,45 @@ namespace VitML.ImageRenderer.Core
 {
     public class ImagePlayer : ObservableObject
     {
+        Logger logger = LogManager.GetLogger("ImagePlayer");
 
         private bool useSourceFPS = false;
         private long frameTime = 1;
         private long lastTime = 0;
+        private static long lastImageUpdatedTime = 0;
 
         private int _FPS;
         private BitmapImage _Image;
 
         private ImageStorage signalStorage;
         private ImageStorage imageStorage;
+        private ImageStorage compressStorage;
         private PlayerConfiguration config;
 
         private Queue<ImageItem> loadItems = new Queue<ImageItem>();
+        private Queue<ImageItem> convertItems = new Queue<ImageItem>();
         private Queue<ImageItem> renderItems = new Queue<ImageItem>();
+        private Queue<ImageItem> compressItems = new Queue<ImageItem>();
         private Queue<ImageItem> removeItems = new Queue<ImageItem>();
         private List<long> timeItems = new List<long>();
 
         private readonly object loadLock = new object();
         private readonly object renderLock = new object();
+        private readonly object convertLock = new object();
         private readonly object removeLock = new object();
+        private readonly object compressLock = new object();
         private readonly object timeLock = new object();
 
         private BackgroundWorker imagePuller;
         private BackgroundWorker imageLoader;
+        private BackgroundWorker imageConverter;
         private BackgroundWorker imageRenderer;
         private BackgroundWorker imageRemover;
+        private BackgroundWorker imageCompressor;
         private BackgroundWorker fpsUpdater;
         private BackgroundWorker gcCleaner;
+
+        private List<BackgroundWorker> workers = new List<BackgroundWorker>();
 
         public BitmapImage Image
         {
@@ -82,6 +95,14 @@ namespace VitML.ImageRenderer.Core
             imageLoader.DoWork += imageLoader_DoWork;
             imageLoader.ProgressChanged += imageLoader_ProgressChanged;
 
+            imageConverter = new BackgroundWorker
+            {
+                WorkerReportsProgress = true,
+                WorkerSupportsCancellation = true
+            };
+            imageConverter.DoWork += imageConverter_DoWork;
+            imageConverter.ProgressChanged += imageConverter_ProgressChanged;
+
             imageRenderer = new BackgroundWorker
             {
                 WorkerReportsProgress = true,
@@ -96,6 +117,12 @@ namespace VitML.ImageRenderer.Core
             };
             imageRemover.DoWork += imageRemover_DoWork;
 
+            imageCompressor = new BackgroundWorker
+            {
+                WorkerSupportsCancellation = true
+            };
+            imageCompressor.DoWork += imageCompressor_DoWork;
+
             fpsUpdater = new BackgroundWorker
             {
                 WorkerReportsProgress = true,
@@ -109,11 +136,26 @@ namespace VitML.ImageRenderer.Core
                 WorkerSupportsCancellation = true
             };
             gcCleaner.DoWork += gcCleaner_DoWork;
+
+            workers.Add(imageLoader);
+            workers.Add(imageConverter);
+            workers.Add(imageRenderer);
+            workers.Add(imageRemover);
+            workers.Add(fpsUpdater);
+            workers.Add(gcCleaner);
         }
 
         public void Setup(PlayerConfiguration config)
         {
             this.config = config;
+            if (config.Source.DoPull)
+                workers.Add(imagePuller);
+            if (config.Compress.IsEnabled)
+            {
+                workers.Add(imageCompressor);
+                compressStorage = CreateStorage(config.Compress.Storage);
+            }
+
             imageStorage = CreateStorage(config.Source.Storage);
             signalStorage = CreateStorage(config.Signal.Storage);
 
@@ -138,7 +180,7 @@ namespace VitML.ImageRenderer.Core
                 sw.Reset();
                 sw.Start();
                 item = imageStorage.Load(null);
-                if (item.Image != null)
+                if (item.ImageData != null)
                     worker.ReportProgress(0, item);
                 sw.Stop();
                 int fps = (int)((this.useSourceFPS) ? 25 : config.Render.FPS) * 2;
@@ -156,6 +198,11 @@ namespace VitML.ImageRenderer.Core
             {
                 var con = storage.Connection as FileConnectionConfiguration;
                 st = new FileStorage(Path.Combine(con.Disk, storage.Directory));
+            }
+            else if (storage.Connection is FilePassiveConnectionConfiguration)
+            {
+                var con = storage.Connection as FilePassiveConnectionConfiguration;
+                st = new FileStoragePassive(con.ImageUri);
             }
             else if (config.Source.Storage.Connection is FtpConnectionConfiguration)
             {
@@ -197,6 +244,24 @@ namespace VitML.ImageRenderer.Core
             } 
         }
 
+        void imageCompressor_DoWork(object sender, DoWorkEventArgs e)
+        {
+            BackgroundWorker worker = (BackgroundWorker)sender;
+            while (!worker.CancellationPending)
+            {
+                ImageItem item = null;
+                lock (compressLock)
+                {
+                    while (compressItems.Count == 0)
+                    {
+                        Monitor.Wait(compressLock);
+                    }
+                    item = compressItems.Dequeue();
+                }
+                compressStorage.Save(item.Time + ".jpg", item);
+            }
+        }
+
         void fpsUpdater_ProgressChanged(object sender, ProgressChangedEventArgs e)
         {
             this.FPS = (int)e.UserState;
@@ -208,6 +273,7 @@ namespace VitML.ImageRenderer.Core
             while (!worker.CancellationPending)
             {
                 int fps = 0;
+                double avg = 0D;
                 if (useSourceFPS)
                 {
                     Thread.Sleep(500);
@@ -217,23 +283,40 @@ namespace VitML.ImageRenderer.Core
                     if (!useSourceFPS)
                     {
                         while (timeItems.Count < config.Render.FPS)
-                        {
                             Monitor.Wait(timeLock);
-                        }
                     }
                     if (timeItems.Count > 0)
                     {
-                        double avg = timeItems.Average();
-                        fps = (avg == 0) ? 0 : (int)(1000 / (Math.Ceiling(avg) / TimeSpan.TicksPerMillisecond));
+                        avg = timeItems.Average();
                         timeItems.Clear();
                     }
                 }
+                fps = (avg == 0) ? 0 : (int)(1000 / (Math.Ceiling(avg) / TimeSpan.TicksPerMillisecond));
                 worker.ReportProgress(0, fps);
             }
         }
 
+        void imageConverter_ProgressChanged(object sender, ProgressChangedEventArgs e)
+        {
+            ImageItem item = e.UserState as ImageItem;
+            Render(item);
+        }
+
+        void imageConverter_DoWork(object sender, DoWorkEventArgs e)
+        {
+            BackgroundWorker worker = (BackgroundWorker)sender;
+            while (!worker.CancellationPending)
+            {
+                ImageItem item = GetConvertItem();
+                item.Convert();
+                worker.ReportProgress(0, item);
+            }
+        }
+
+
         void imageRenderer_ProgressChanged(object sender, ProgressChangedEventArgs e)
         {
+            AddTime(DateTime.Now.Ticks);
             BitmapImage image = e.UserState as BitmapImage;
             this.Image = image;
         }
@@ -247,34 +330,28 @@ namespace VitML.ImageRenderer.Core
                 ImageItem item;
                 sw.Reset();
                 sw.Start();
-                lock (renderLock)
-                {
-                    while (renderItems.Count == 0)
-                    {
-                        Monitor.Wait(renderLock);
-                    }
-                    item = renderItems.Dequeue();
-                    Monitor.PulseAll(renderLock);
-                }
+                item = GetRenderItem();
                 worker.ReportProgress(0, item.Image);
                 if (config.Render.DeleteImages)
                     Remove(item.Name);
-                sw.Stop();
+                if (config.Compress.IsEnabled)
+                    Compress(item);
                 item.ShowTime -= sw.ElapsedTicks;
                 long showTime = item.ShowTime;
                 if (showTime > 100 * TimeSpan.TicksPerMillisecond)
                     showTime = 100 * TimeSpan.TicksPerMillisecond;
-                AddTime(showTime);
+                
                 int delayTime = (int)Math.Floor(showTime / (double)TimeSpan.TicksPerMillisecond);
                 if (delayTime > 0)
                     Thread.Sleep(delayTime);
             }
         }
 
+
         void imageLoader_ProgressChanged(object sender, ProgressChangedEventArgs e)
         {
             var item = e.UserState as ImageItem;
-            this.Render(item);
+            this.Convert(item);
         }
 
         void imageLoader_DoWork(object sender, DoWorkEventArgs e)
@@ -286,14 +363,7 @@ namespace VitML.ImageRenderer.Core
                 ImageItem item;
                 sw.Reset();
                 sw.Start();
-                lock (loadLock)
-                {
-                        while (loadItems.Count == 0)
-                        {
-                            Monitor.Wait(loadLock);
-                        }
-                    item = loadItems.Dequeue();
-                }
+                item = GetLoadItem();
                 lock (renderLock)
                 {
                     while (renderItems.Count > 60)
@@ -302,22 +372,15 @@ namespace VitML.ImageRenderer.Core
                     }
                 }
                 ImageItem ii = imageStorage.Load(item.Name);
-                item.Image = ii.Image;
+                item.ImageData = ii.ImageData;
                 sw.Stop();
-                item.ShowTime -= sw.ElapsedTicks;
                 worker.ReportProgress(0, item);
             }     
         }
 
         public void Start()
         {
-            if (config.Source.DoPull)
-                imagePuller.RunWorkerAsync();
-            imageLoader.RunWorkerAsync();
-            imageRenderer.RunWorkerAsync();
-            imageRemover.RunWorkerAsync();
-            fpsUpdater.RunWorkerAsync();
-            gcCleaner.RunWorkerAsync();
+            workers.ForEach(w => w.RunWorkerAsync());
 
             imageStorage.Connect();
             IEnumerable<string> items = imageStorage.GetImages();
@@ -335,13 +398,7 @@ namespace VitML.ImageRenderer.Core
 
         public void Stop()
         {
-            if(config.Source.DoPull)
-                imagePuller.CancelAsync();
-            imageLoader.CancelAsync();
-            imageRenderer.CancelAsync();
-            imageRemover.CancelAsync();
-            fpsUpdater.CancelAsync();
-            gcCleaner.CancelAsync();
+            workers.ForEach(w => w.CancelAsync());
 
             imageStorage.Disconnect();
             imageStorage.ImageAdded -= imageStorage_ImageAdded;
@@ -359,6 +416,44 @@ namespace VitML.ImageRenderer.Core
             }
         }
 
+        private ImageItem GetLoadItem()
+        {
+            ImageItem item = null;
+            lock (loadLock)
+            {
+                while (loadItems.Count == 0)
+                {
+                    Monitor.Wait(loadLock);
+                }
+                item = loadItems.Dequeue();
+            }
+            return item;
+        }
+
+        protected void Convert(ImageItem item)
+        {
+            lock (convertLock)
+            {
+                convertItems.Enqueue(item);
+                Monitor.PulseAll(convertLock);
+            }
+        }
+
+        private ImageItem GetConvertItem()
+        {
+            ImageItem item = null;
+            lock (convertLock)
+            {
+                while (convertItems.Count == 0)
+                {
+                    Monitor.Wait(convertLock);
+                }
+                item = convertItems.Dequeue();
+                Monitor.PulseAll(convertLock);
+            }
+            return item;
+        }
+
         protected void Render(ImageItem item)
         {
             lock (renderLock)
@@ -366,6 +461,30 @@ namespace VitML.ImageRenderer.Core
                 renderItems.Enqueue(item);
                 Monitor.PulseAll(renderLock);
             }
+        }
+
+        protected void Compress(ImageItem item)
+        {
+            lock (compressLock)
+            {
+                compressItems.Enqueue(item);
+                Monitor.PulseAll(compressLock);
+            }
+        }
+
+        private ImageItem GetRenderItem()
+        {
+            ImageItem item = null;
+            lock (renderLock)
+            {
+                while (renderItems.Count == 0)
+                {
+                    Monitor.Wait(renderLock);
+                }
+                item = renderItems.Dequeue();
+                Monitor.PulseAll(renderLock);
+            }
+            return item;
         }
 
         protected void Remove(string name)
@@ -383,7 +502,10 @@ namespace VitML.ImageRenderer.Core
             if (time < 0) time = 0;
             lock (timeLock)
             {
-                timeItems.Add(time);
+                long diff = time - lastImageUpdatedTime;
+                lastImageUpdatedTime = time;
+                if (diff > 0)
+                    timeItems.Add(diff);
                 Monitor.PulseAll(timeLock);
             }
         }
@@ -429,8 +551,9 @@ namespace VitML.ImageRenderer.Core
             if (!useSourceFPS)
                 showTime = frameTime;
             item.ShowTime = showTime;
+            //logger.Info(showTime);
             this.lastTime = item.Time;
-            Render(item);
+            Convert(item);
         }
     }
 }

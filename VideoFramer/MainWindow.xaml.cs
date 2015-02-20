@@ -35,7 +35,6 @@ namespace VideoFramer
         private static string ConsumerKey = "2d177rkc7n7v2kx";
         private static string ConsumerSecret = "g5rc3w73pmymf3f";
 
-        private int frameTime = 30;
         private BitmapImage _Image;
         private System.Threading.Thread dbThread, frameThread;
         private bool running = true;
@@ -43,6 +42,7 @@ namespace VideoFramer
         private bool _OneFileMode = false;
         private int _Quality = 100;
         private int _Scale = 50;
+        private int _FPS = 30;
         private string _Video = @"C:\Users\Public\Videos\Sample Videos\WildLife.wmv";
         private string _Directory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "res");
         private List<PushImage> images = new List<PushImage>();
@@ -116,6 +116,16 @@ namespace VideoFramer
             {
                 _Scale = value;
                 OnPropertyChanged("Scale");
+            }
+        }
+        public int FPS
+        {
+            get { return _FPS; }
+            set
+            {
+                if (value <= 0) return;
+                _FPS = value;
+                OnPropertyChanged("FPS");
             }
         }
         public BitmapImage Image
@@ -197,6 +207,7 @@ namespace VideoFramer
                      }
                  }
                  int elapsed = (int)sw.ElapsedMilliseconds;
+                 int frameTime = (int)(1000 / (double)FPS);
                  if (elapsed < frameTime)
                      System.Threading.Thread.Sleep(frameTime - elapsed);
                  sw.Reset();
@@ -217,6 +228,7 @@ namespace VideoFramer
              BackgroundWorker worker = (BackgroundWorker)sender;
              while (!worker.CancellationPending)
              {
+                 int frameTime = (int)(1000 / (double)FPS);
                  int delay = frameTime;
                  sw.Start();
                  if (saveImages)
@@ -267,6 +279,7 @@ namespace VideoFramer
                 Stopwatch sw = new Stopwatch();
                 while (running)
                 {
+                    int frameTime = (int)(1000 / (double)FPS);
                     int delay = frameTime;
                     if (saveImages)
                     {
@@ -338,6 +351,7 @@ namespace VideoFramer
                             images.Remove(item);
                         }
                     }
+                    int frameTime = (int)(1000 / (double)FPS);
                     int elapsed = (int)sw.ElapsedMilliseconds;
                     if (elapsed < frameTime)
                         System.Threading.Thread.Sleep(frameTime - elapsed);
@@ -379,8 +393,6 @@ namespace VideoFramer
         void startBtn_Click(object sender, RoutedEventArgs e)
         {
             SaveImages = true;
-            int fps = int.Parse(fpsTb.Text);
-            frameTime = (int)Math.Round(1000 / (double)fps);
         }
 
         void SaveToDirectory(string name, byte[] frame)
