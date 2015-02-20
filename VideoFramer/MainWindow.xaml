@@ -1,7 +1,7 @@
 ﻿<Window x:Class="VideoFramer.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="MainWindow" Height="462" Width="645">
+        Title="MainWindow" Height="362" Width="645">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -19,7 +19,18 @@
         </StackPanel>
         <Border Background="Black" VerticalAlignment="Stretch" Height="Auto" Grid.ColumnSpan="2" Grid.Row="1">
             <Grid>
-                <MediaElement Name="VideoControl" Source="{Binding Video, Mode=OneWay}" IsMuted="True"></MediaElement>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <DockPanel Grid.Column="0" VerticalAlignment="Center">
+                    <Label Content="Source" DockPanel.Dock="Top" Foreground="White" FontSize="18" FontWeight="Bold" HorizontalAlignment="Center"/>
+                    <MediaElement Name="VideoControl" Source="{Binding Video, Mode=OneWay}" IsMuted="True" ></MediaElement>
+                </DockPanel>
+                <DockPanel Grid.Column="1" VerticalAlignment="Center">
+                    <Label Content="Output" DockPanel.Dock="Top" Foreground="White" FontSize="18" FontWeight="Bold" HorizontalAlignment="Center"/>
+                    <Image Source="{Binding Image}"/>
+                </DockPanel>
             </Grid>
         </Border>
         <Border Grid.Column="1" Grid.RowSpan="2" VerticalAlignment="Top" BorderBrush="Gray" BorderThickness="0,0,0,0" >

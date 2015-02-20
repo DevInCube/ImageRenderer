@@ -36,6 +36,7 @@ namespace VideoFramer
         private static string ConsumerSecret = "g5rc3w73pmymf3f";
 
         private int frameTime = 30;
+        private BitmapImage _Image;
         private System.Threading.Thread dbThread, frameThread;
         private bool running = true;
         private bool saveImages = false;
@@ -117,7 +118,15 @@ namespace VideoFramer
                 OnPropertyChanged("Scale");
             }
         }
-
+        public BitmapImage Image
+        {
+            get { return _Image; }
+            set
+            {
+                _Image = value;
+                OnPropertyChanged("Image");
+            }
+        }
         #endregion
 
         private readonly object locker = new object();
@@ -310,6 +319,10 @@ namespace VideoFramer
                         if (images.Count > 0)
                         {
                             PushImage item = images.First();
+                            this.Dispatcher.Invoke((Action)(() => {
+                                if (item.Image != null)
+                                    this.Image = Ex.ToImage(item.Image);
+                            }));
                             if (OneFileMode)
                             {
                                 string imageFile = "image.jpg";
@@ -468,6 +481,24 @@ namespace VideoFramer
             }
 
             return imageArray;
+        }
+
+        public static System.Windows.Media.Imaging.BitmapImage ToImage(byte[] array)
+        {
+            using (var ms = new System.IO.MemoryStream(array))
+            {
+                System.Windows.Media.Imaging.BitmapImage image = null;
+                System.Windows.Application.Current.Dispatcher.Invoke((Action)(() =>
+                {
+                    image = new System.Windows.Media.Imaging.BitmapImage();
+                    image.BeginInit();
+                    image.CacheOption = System.Windows.Media.Imaging.BitmapCacheOption.OnLoad;
+                    image.StreamSource = ms;
+                    image.EndInit();
+                    image.Freeze();
+                }));
+                return image;
+            }
         }
 
     }

@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Text;
+using System.Windows;
 using System.Windows.Media.Imaging;
 using VitML.ImageRenderer.Core;
 using VitML.ImageRenderer.Extensions;
@@ -47,9 +48,10 @@ namespace VitML.ImageRenderer.Storages
         public override ImageItem Load(string id)
         {
             ImageItem item = new ImageItem();
+            string timeStr = null;
             try
             {
-                if (true)
+                if (false)
                 {
                     long time = File.GetLastWriteTime(imageUri).Ticks;
                     if (time <= prevTime)
@@ -64,7 +66,7 @@ namespace VitML.ImageRenderer.Storages
                     WebClient myWebClient = new WebClient();
                     byte[] imageBuf = myWebClient.DownloadData(imageUri);
                     byte[] timeBuf = myWebClient.DownloadData(timeUri);
-                    string timeStr = System.Text.Encoding.UTF8.GetString(timeBuf);
+                    timeStr = System.Text.Encoding.UTF8.GetString(timeBuf);
                     long timeStamp = long.Parse(timeStr);
                     item.Image = ImageHelper.ToImage(imageBuf);
                     item.Time = timeStamp;
@@ -75,6 +77,14 @@ namespace VitML.ImageRenderer.Storages
                 //
             }
             catch (IOException)
+            {
+                //
+            }
+            catch (FormatException fe)
+            {
+                MessageBox.Show(timeStr);
+            }
+            catch (NotSupportedException)
             {
                 //
             }
