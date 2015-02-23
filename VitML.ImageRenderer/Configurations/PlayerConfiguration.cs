@@ -13,6 +13,7 @@ namespace VitML.ImageRenderer.Core
     [XmlInclude(typeof(FilePassiveConnectionConfiguration))]
     [XmlInclude(typeof(FtpConnectionConfiguration))]
     [XmlInclude(typeof(HttpConnectionConfiguration))]
+    [XmlInclude(typeof(HttpConnection2Configuration))]
     public abstract class ConnectionConfiguration
     {
         [XmlAttribute("name")]
@@ -79,6 +80,22 @@ namespace VitML.ImageRenderer.Core
         {
             ImageUri = "";
             TimeUri = "";
+        }
+
+    }
+
+    [XmlType("http2")]
+    public class HttpConnection2Configuration : ConnectionConfiguration
+    {
+        [XmlElement("image")]
+        public string ImageUri { get; set; }
+        [XmlElement("test")]
+        public string TestUri { get; set; }
+
+        public HttpConnection2Configuration()
+        {
+            ImageUri = "";
+            TestUri = "";
         }
 
     }

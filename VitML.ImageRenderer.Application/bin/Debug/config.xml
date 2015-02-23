@@ -12,6 +12,10 @@
       <image>http://62.122.152.67:41328/25.jpeg</image>
 	  <time>http://62.122.152.67:41328/25.txt</time>
     </connection>
+	<connection xsi:type="http2" name="httpCon2">
+      <image>http://62.122.152.67:41328/25.jpeg</image>
+	  <test>http://62.122.152.67:41329</test>
+    </connection>
 	<connection xsi:type="file2" name="fileOneCon">
       <image>C:\Users\user\Desktop\resOne\image.jpg</image>
     </connection>
@@ -24,12 +28,13 @@
       <directory>\Users\user\Desktop\compress</directory>
     </storage>
 	<storage name="httpOne" connection="httpCon" />
+	<storage name="http2" connection="httpCon2" />
 	<storage name="fileOne" connection="fileOneCon" />
   </storages>
   <player>
     <render fps="0" cleanup="false" deleteimages="false" />
     <signal storage="input" filename="0.listen" />
-    <source storage="httpOne" pull="true"/>
+    <source storage="http2" pull="true"/>
     <compress storage="compress" enabled="true" quality="0" />
   </player>
   <window title="Window" showfps="true" />

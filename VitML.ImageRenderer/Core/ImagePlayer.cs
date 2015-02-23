@@ -186,8 +186,8 @@ namespace VitML.ImageRenderer.Core
                 int fps = (int)((this.useSourceFPS) ? 25 : config.Render.FPS) * 2;
                 int delay = (int)(1000 / (double)fps - sw.ElapsedMilliseconds);
                 if (delay > 1000) delay = 1000;
-                if (delay > 0)
-                    Thread.Sleep(delay);
+                //if (delay > 0)
+                    //Thread.Sleep(delay);
             }     
         }
 
@@ -213,6 +213,11 @@ namespace VitML.ImageRenderer.Core
             {
                 var con = storage.Connection as HttpConnectionConfiguration;
                 st = new HTTPStorage(con.ImageUri, con.TimeUri);
+            }
+            else if (config.Source.Storage.Connection is HttpConnection2Configuration)
+            {
+                var con = storage.Connection as HttpConnection2Configuration;
+                st = new HTTPStorage2(con.ImageUri, con.TestUri);
             }
             return st;
         }
@@ -276,7 +281,7 @@ namespace VitML.ImageRenderer.Core
                 double avg = 0D;
                 if (useSourceFPS)
                 {
-                    Thread.Sleep(500);
+                    Thread.Sleep(2000);
                 }
                 lock (timeLock)
                 {

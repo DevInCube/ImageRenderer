@@ -93,6 +93,7 @@
     <Compile Include="Storages\FTPFileSystemWatcher.cs" />
     <Compile Include="Storages\FileStoragePassive.cs" />
     <Compile Include="Storages\HTTPStorage.cs" />
+    <Compile Include="Storages\HTTPStorage2.cs" />
     <Compile Include="ViewModels\ObservableObject.cs" />
     <Compile Include="Views\Renderer.xaml.cs">
       <DependentUpon>Renderer.xaml</DependentUpon>
