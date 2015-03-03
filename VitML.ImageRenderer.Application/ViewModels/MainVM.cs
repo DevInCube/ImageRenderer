@@ -42,18 +42,13 @@ namespace VitML.ImageRenderer.App.ViewModels
 
         public MainVM()
         {
-            string exD = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-            string confPath = Path.Combine(exD, "config.xml");
-            string content = File.ReadAllText(confPath);
-            Configuration conf = Configuration.Parse(content);
-            conf.Initialize();
-            this.Setup(conf);
+            //
         }
 
-        public void Setup(Configuration config)
+        public void Setup(WindowConfiguration config)
         {
-            this.WindowTitle = config.Window.Title;
-            this.ShowFPS = config.Window.ShowFPS;
+            this.WindowTitle = config.Title;
+            this.ShowFPS = config.ShowFPS;
             Player.Setup(config.Player);
         }
 

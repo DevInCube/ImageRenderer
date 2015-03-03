@@ -14,6 +14,7 @@ namespace VitML.ImageRenderer.Core
     [XmlInclude(typeof(FtpConnectionConfiguration))]
     [XmlInclude(typeof(HttpConnectionConfiguration))]
     [XmlInclude(typeof(HttpConnection2Configuration))]
+    [XmlInclude(typeof(HttpConnection3RingConfiguration))]
     public abstract class ConnectionConfiguration
     {
         [XmlAttribute("name")]
@@ -100,6 +101,22 @@ namespace VitML.ImageRenderer.Core
 
     }
 
+    [XmlType("http3ring")]
+    public class HttpConnection3RingConfiguration : ConnectionConfiguration
+    {
+        [XmlElement("dir")]
+        public string DirUri { get; set; }
+        [XmlElement("time")]
+        public string TimeUri { get; set; }
+
+        public HttpConnection3RingConfiguration()
+        {
+            DirUri = "";
+            TimeUri = "";
+        }
+
+    }
+
     public class StorageConfiguration
     {
         [XmlAttribute("name")]
@@ -162,19 +179,6 @@ namespace VitML.ImageRenderer.Core
             }
         }
 
-        public class SignalConfiguration : AStorageConfiguration
-        {
-            [XmlAttribute("filename")]
-            public string FileName { get; set; }
-
-
-            public SignalConfiguration()
-            {
-                FileName = "0.listen";
-                StorageName = "signal";
-            }
-        }
-
         public class SourceConfiguration : AStorageConfiguration
         {
 
@@ -201,11 +205,9 @@ namespace VitML.ImageRenderer.Core
                 StorageName = "";
             }
         }
-
+       
         [XmlElement("render")]
         public RenderConfiguration Render { get; set; }
-        [XmlElement("signal")]
-        public SignalConfiguration Signal { get; set; }
         [XmlElement("source")]
         public SourceConfiguration Source { get; set; }
         [XmlElement("compress")]
@@ -214,14 +216,12 @@ namespace VitML.ImageRenderer.Core
         public PlayerConfiguration()
         {
             Render = new RenderConfiguration();
-            Signal = new SignalConfiguration();
             Source = new SourceConfiguration();
             Compress = new CompressConfiguration();
         }
 
         public void Initialize(IObjectProvider configuration)
         {
-            Signal.Initialize(configuration);
             Source.Initialize(configuration);
             Compress.Initialize(configuration);
         }

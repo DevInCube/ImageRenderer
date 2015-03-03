@@ -7,6 +7,8 @@ using System.Runtime.Serialization;
 using System.Text;
 using System.Xml.Linq;
 using System.Xml.Serialization;
+using VitML.ImageRenderer.App.ViewModels;
+using VitML.ImageRenderer.App.Views;
 using VitML.ImageRenderer.Configurations;
 using VitML.ImageRenderer.Core;
 using VitML.ImageRenderer.Extensions;
@@ -24,23 +26,21 @@ namespace VitML.ImageRenderer.App.Models
         [XmlArray("storages")]
         [XmlArrayItem("storage")]
         public List<StorageConfiguration> Storages { get; set; }
-        [XmlElement("player")]
-        public PlayerConfiguration Player { get; set; }
-        [XmlElement("window")]
-        public WindowConfiguration Window { get; set; }
+        [XmlArray("instances")]
+        [XmlArrayItem("window")]
+        public List<WindowConfiguration> Instances { get; set; }
 
         public Configuration()
         {
             Connections = new List<ConnectionConfiguration>();
             Storages = new List<StorageConfiguration>();
-            Player = new PlayerConfiguration();
-            Window = new WindowConfiguration();
+            Instances = new List<WindowConfiguration>();
         }
 
         public void Initialize()
         {
             Storages.ForEach(x => x.Initialize(this));
-            Player.Initialize(this as IObjectProvider);
+            Instances.ForEach(x => { if (x.IsEnabled) x.Initialize(this); });
         }
 
         public static Configuration Parse(string content)
@@ -68,15 +68,28 @@ namespace VitML.ImageRenderer.App.Models
     public class WindowConfiguration
     {
 
+        [XmlAttribute("enabled")]
+        public bool IsEnabled { get; set; }
         [XmlAttribute("title")]
         public string Title { get; set; }
         [XmlAttribute("showfps")]
         public bool ShowFPS { get; set; }
+        [XmlElement("player")]
+        public PlayerConfiguration Player { get; set; }
 
         public WindowConfiguration()
         {
             Title = "Window";
             ShowFPS = true;
+        }
+
+        public void Initialize(IObjectProvider op)
+        {
+            this.Player.Initialize(op);
+
+            MainWindow w = new MainWindow();
+            (w.DataContext as MainVM).Setup(this);
+            w.Show();
         }
     }
 }

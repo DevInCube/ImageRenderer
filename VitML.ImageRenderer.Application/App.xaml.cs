@@ -4,6 +4,7 @@ using System.Configuration;
 using System.Data;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Windows;
 using System.Xml.Serialization;
 using VitML.ImageRenderer.App.Models;
@@ -24,15 +25,11 @@ namespace VitML.ImageRenderer.App
         {
             this.DispatcherUnhandledException += App_DispatcherUnhandledException;
 
-
-            /*Configuration c = new Configuration();
-            c.Connections.Add(new FileConnectionConfiguration());
-            c.Connections.Add(new FtpConnectionConfiguration());
-            c.Storages.Add(new StorageConfiguration());
-            string res = SerializeObject(c);*/
-
-            Window window = new MainWindow();
-            window.Show();
+            string exD = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+            string confPath = Path.Combine(exD, "config.xml");
+            string content = File.ReadAllText(confPath);
+            Configuration conf = Configuration.Parse(content);
+            conf.Initialize();
         }
 
         void App_DispatcherUnhandledException(object sender, System.Windows.Threading.DispatcherUnhandledExceptionEventArgs e)

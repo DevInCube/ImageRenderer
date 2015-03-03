@@ -28,7 +28,6 @@ namespace VitML.ImageRenderer.Core
         private int _FPS;
         private BitmapImage _Image;
 
-        private ImageStorage signalStorage;
         private ImageStorage imageStorage;
         private ImageStorage compressStorage;
         private PlayerConfiguration config;
@@ -157,7 +156,6 @@ namespace VitML.ImageRenderer.Core
             }
 
             imageStorage = CreateStorage(config.Source.Storage);
-            signalStorage = CreateStorage(config.Signal.Storage);
 
             useSourceFPS = (config.Render.FPS <= 0);
             if (!useSourceFPS)
@@ -176,18 +174,9 @@ namespace VitML.ImageRenderer.Core
             BackgroundWorker worker = (BackgroundWorker)sender;
             while (!worker.CancellationPending)
             {
-                ImageItem item;
-                sw.Reset();
-                sw.Start();
-                item = imageStorage.Load(null);
+                ImageItem item = imageStorage.Load(null);
                 if (item.ImageData != null)
                     worker.ReportProgress(0, item);
-                sw.Stop();
-                int fps = (int)((this.useSourceFPS) ? 25 : config.Render.FPS) * 2;
-                int delay = (int)(1000 / (double)fps - sw.ElapsedMilliseconds);
-                if (delay > 1000) delay = 1000;
-                //if (delay > 0)
-                    //Thread.Sleep(delay);
             }     
         }
 
@@ -218,6 +207,11 @@ namespace VitML.ImageRenderer.Core
             {
                 var con = storage.Connection as HttpConnection2Configuration;
                 st = new HTTPStorage2(con.ImageUri, con.TestUri);
+            }
+            else if (config.Source.Storage.Connection is HttpConnection3RingConfiguration)
+            {
+                var con = storage.Connection as HttpConnection3RingConfiguration;
+                st = new HTTPStorage3Ring(con.DirUri, con.TimeUri);
             }
             return st;
         }
@@ -397,8 +391,7 @@ namespace VitML.ImageRenderer.Core
                     ProcessItem(item);
             }
             imageStorage.ImageAdded += imageStorage_ImageAdded;
-            signalStorage.Connect();
-            signalStorage.Save(config.Signal.FileName, new byte[0]);
+           
         }
 
         public void Stop()
@@ -408,8 +401,6 @@ namespace VitML.ImageRenderer.Core
             imageStorage.Disconnect();
             imageStorage.ImageAdded -= imageStorage_ImageAdded;
 
-            signalStorage.Remove(config.Signal.FileName);
-            signalStorage.Disconnect();
         }
 
         protected void Load(ImageItem item)
@@ -556,7 +547,6 @@ namespace VitML.ImageRenderer.Core
             if (!useSourceFPS)
                 showTime = frameTime;
             item.ShowTime = showTime;
-            //logger.Info(showTime);
             this.lastTime = item.Time;
             Convert(item);
         }

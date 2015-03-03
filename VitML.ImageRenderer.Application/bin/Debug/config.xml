@@ -3,21 +3,13 @@
     <connection xsi:type="file" name="fileCon">
       <disk>C:</disk>
     </connection>
-    <connection xsi:type="ftp" name="ftpCon">
-      <host>ftp.vit.ua</host>
-      <username>outsource</username>
-      <password>0uts0urc3</password>
+	<connection xsi:type="http3ring" name="kardachi">
+      <dir>http://62.122.152.67:41328/</dir>
+	  <time>http://62.122.152.67:41329</time>
     </connection>
-	<connection xsi:type="http" name="httpCon">
-      <image>http://62.122.152.67:41328/25.jpeg</image>
-	  <time>http://62.122.152.67:41328/25.txt</time>
-    </connection>
-	<connection xsi:type="http2" name="httpCon2">
-      <image>http://62.122.152.67:41328/25.jpeg</image>
-	  <test>http://62.122.152.67:41329</test>
-    </connection>
-	<connection xsi:type="file2" name="fileOneCon">
-      <image>C:\Users\user\Desktop\resOne\image.jpg</image>
+	<connection xsi:type="http3ring" name="peremoha">
+      <dir>http://62.122.152.67:41428/live/</dir>
+	  <time>http://62.122.152.67:41429</time>
     </connection>
   </connections>
   <storages>
@@ -27,15 +19,23 @@
 	<storage name="compress" connection="fileCon">
       <directory>\Users\user\Desktop\compress</directory>
     </storage>
-	<storage name="httpOne" connection="httpCon" />
-	<storage name="http2" connection="httpCon2" />
-	<storage name="fileOne" connection="fileOneCon" />
+	<storage name="kardachi" connection="kardachi" />
+	<storage name="peremoha" connection="peremoha" />
   </storages>
-  <player>
-    <render fps="0" cleanup="false" deleteimages="false" />
-    <signal storage="input" filename="0.listen" />
-    <source storage="http2" pull="true"/>
-    <compress storage="compress" enabled="true" quality="0" />
-  </player>
-  <window title="Window" showfps="true" />
+  <instances>
+	<window enabled="true" title="LiveStream" showfps="true">
+	  <player >
+		<render fps="0" cleanup="false" deleteimages="false" />
+		<source storage="kardachi" pull="true"/>
+		<compress storage="compress" enabled="false" quality="0" />
+	  </player>
+	</window>
+	<window enabled="true" title="LiveStream2" showfps="true">
+	  <player >
+		<render fps="0" cleanup="false" deleteimages="false" />
+		<source storage="peremoha" pull="true"/>
+		<compress storage="compress" enabled="false" quality="0" />
+	  </player>
+	</window>
+  </instances>
 </configuration>

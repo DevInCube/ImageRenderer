@@ -48,8 +48,7 @@ namespace VitML.ImageRenderer.Extensions
 
         public static System.Windows.Media.Imaging.BitmapImage ToImage(byte[] bytes)
         {
-            sw.Reset();
-            sw.Start();
+            
             using (Stream ms = new System.IO.MemoryStream(bytes))
             {
                 System.Windows.Media.Imaging.BitmapImage image = null;
@@ -57,12 +56,15 @@ namespace VitML.ImageRenderer.Extensions
                 {
                     System.Windows.Application.Current.Dispatcher.Invoke((Action)(() =>
                     {
+                        sw.Reset();
+                        sw.Start();
                         image = new System.Windows.Media.Imaging.BitmapImage();
                         image.BeginInit();
                         image.CacheOption = System.Windows.Media.Imaging.BitmapCacheOption.OnLoad;
                         image.StreamSource = ms;
                         image.EndInit();
                         image.Freeze();
+                        //logger.Trace("Convert: " + sw.ElapsedTicks);
                     }));
                 }
                 catch (NullReferenceException)
