@@ -8,5 +8,7 @@ namespace VitML.ImageRenderer.Configurations
     public interface IObjectProvider
     {
         T GetObject<T>(string key);
+
+        void AddObject<T>(T Storage);
     }
 }

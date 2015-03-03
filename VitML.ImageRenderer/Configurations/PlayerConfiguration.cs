@@ -22,7 +22,7 @@ namespace VitML.ImageRenderer.Core
 
         public ConnectionConfiguration()
         {
-            Name = "";
+            Name = Guid.NewGuid().ToString();
         }
     }
 
@@ -130,7 +130,7 @@ namespace VitML.ImageRenderer.Core
 
         public StorageConfiguration()
         {
-            Name = "";
+            Name = Guid.NewGuid().ToString();
             ConnectionName = "";
             Directory = "";
         }
@@ -138,6 +138,22 @@ namespace VitML.ImageRenderer.Core
         public void Initialize(IObjectProvider conf)
         {
             this.Connection = conf.GetObject<ConnectionConfiguration>(ConnectionName);
+        }
+
+        public void Prepare(IObjectProvider conf)
+        {
+            if (this.Connection != null)
+            {
+                ConnectionName = this.Connection.Name;
+                if (conf.GetObject<ConnectionConfiguration>(ConnectionName) == null)
+                {
+                    conf.AddObject(Connection);
+                }
+            }
+            else
+            {
+                ConnectionName = "";
+            }                   
         }
     }
 
@@ -154,11 +170,30 @@ namespace VitML.ImageRenderer.Core
             public AStorageConfiguration()
             {
                 StorageName = "";
+                Storage = new StorageConfiguration();
             }
 
             public void Initialize(IObjectProvider conf)
             {
                 this.Storage = conf.GetObject<StorageConfiguration>(StorageName);
+                if (Storage == null) Storage = new StorageConfiguration();
+            }
+
+            public void Prepare(IObjectProvider conf)
+            {
+                if (this.Storage != null)
+                {
+                    StorageName = this.Storage.Name;
+                    Storage.Prepare(conf);
+                    if (conf.GetObject<StorageConfiguration>(StorageName) == null)
+                    {
+                        conf.AddObject(Storage);
+                    }
+                }
+                else
+                {
+                    StorageName = "";
+                }                
             }
         }
 
@@ -187,7 +222,7 @@ namespace VitML.ImageRenderer.Core
 
             public SourceConfiguration()
             {
-                StorageName = "input";
+                StorageName = "";
             }
         }
 
@@ -224,6 +259,12 @@ namespace VitML.ImageRenderer.Core
         {
             Source.Initialize(configuration);
             Compress.Initialize(configuration);
+        }
+
+        public void Prepare(IObjectProvider configuration)
+        {
+            Source.Prepare(configuration);
+            Compress.Prepare(configuration);
         }
     }
 }

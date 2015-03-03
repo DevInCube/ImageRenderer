@@ -30,6 +30,7 @@ namespace VitML.ImageRenderer.App
             string content = File.ReadAllText(confPath);
             Configuration conf = Configuration.Parse(content);
             conf.Initialize();
+            conf.Start();
         }
 
         void App_DispatcherUnhandledException(object sender, System.Windows.Threading.DispatcherUnhandledExceptionEventArgs e)

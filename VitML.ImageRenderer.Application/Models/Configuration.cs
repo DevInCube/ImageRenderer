@@ -40,12 +40,27 @@ namespace VitML.ImageRenderer.App.Models
         public void Initialize()
         {
             Storages.ForEach(x => x.Initialize(this));
-            Instances.ForEach(x => { if (x.IsEnabled) x.Initialize(this); });
+            Instances.ForEach(x => { x.Initialize(this); });
+        }
+
+        public void Prepare()
+        {
+            Instances.ForEach(x => { x.Prepare(this); });
+        }
+
+        public void Start()
+        {
+            Instances.ForEach(x => { if (x.IsEnabled) x.Start(); });
         }
 
         public static Configuration Parse(string content)
         {
             return SerializationHelper.DeserializeObject<Configuration>(content);
+        }
+
+        public string Serialize()
+        {
+            return SerializationHelper.SerializeObject(this);
         }
 
         public T GetObject<T>(string key)
@@ -63,6 +78,22 @@ namespace VitML.ImageRenderer.App.Models
             if (obj == null) return default(T);
             return (T)obj;
         }
+
+
+        public void AddObject<T>(T obj)
+        {
+            Type genType = typeof(T);
+            if (genType == typeof(ConnectionConfiguration))
+            {
+                Connections.Add(obj as ConnectionConfiguration);
+            }
+            else if (genType == typeof(StorageConfiguration))
+            {
+                Storages.Add(obj as StorageConfiguration);
+            }            
+        }
+
+        
     }    
 
     public class WindowConfiguration
@@ -81,15 +112,24 @@ namespace VitML.ImageRenderer.App.Models
         {
             Title = "Window";
             ShowFPS = true;
+            Player = new PlayerConfiguration();
         }
 
         public void Initialize(IObjectProvider op)
         {
             this.Player.Initialize(op);
+        }
 
+        public void Start()
+        {
             MainWindow w = new MainWindow();
             (w.DataContext as MainVM).Setup(this);
             w.Show();
+        }
+
+        public void Prepare(IObjectProvider op)
+        {
+            Player.Prepare(op);
         }
     }
 }

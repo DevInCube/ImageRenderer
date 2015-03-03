@@ -2,7 +2,9 @@
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
   <?include $(sys.CURRENTDIR)Config.wxi ?>
 	<Product Id="*" Name="$(var.ProductName)" Language="1033" Version="1.0.0.0" Manufacturer="$(var.Manufacturer)" UpgradeCode="817c95c6-fe57-4bdd-a4d2-814a5acbe3af">
-		<Package InstallerVersion="200" Compressed="yes" InstallScope="perMachine" />
+		<Package InstallerVersion="200" Compressed="yes"
+             InstallPrivileges="elevated"
+             InstallScope="perMachine" />
 
 		<MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." />
 		<MediaTemplate EmbedCab="yes"/>
@@ -16,11 +18,20 @@
              WorkingDirectory="INSTALLFOLDER"/>       
         <RegistryValue Root="HKCU" Key="Software\$(var.Manufacturer)\$(var.ProductName)" Name="installed" Type="integer" Value="1" KeyPath="yes"/>
        </Component>
+      <Component Id="ConfigDesktopShortcut" Guid="61202F87-CFDD-403A-8CC5-26F209BF6C21">
+        <Shortcut Id="ConfigDesktopMenuShortcut"
+             Name="$(var.ProductName)Configuration"
+             Description="VIT Player Configuration"
+             Target="[#$(var.ProductName)Config.exe]"
+             WorkingDirectory="INSTALLFOLDER"/>
+        <RegistryValue Root="HKCU" Key="Software\$(var.Manufacturer)\$(var.ProductName)" Name="installed" Type="integer" Value="1" KeyPath="yes"/>
+      </Component>
     </DirectoryRef>
 
 		<Feature Id="ProductFeature" Title="$(var.ProductName) Installer" Level="1">
       <ComponentGroupRef Id="ProductComponents" />
       <ComponentRef Id="ApplicationDesktopShortcut" />
+      <ComponentRef Id="ConfigDesktopShortcut" />
     </Feature>
 	</Product>
 
@@ -38,15 +49,21 @@
 	<Fragment>
 		<ComponentGroup Id="ProductComponents" Directory="INSTALLFOLDER">			
 			<Component Id="Lib">
-        <File Source="$(var.VitML.ImageRenderer.TargetPath)" />
+        <File Source="$(var.VitML.ImageRenderer.TargetPath)" />        
 			 </Component>
+      <Component Id="NLogConfig">
+        <File Source="$(var.VitML.ImageRenderer.ProjectDir)NLog.config" />
+      </Component>
       <Component Id="Exe">
         <File Id="$(var.ProductName).exe" Source="$(var.VitML.ImageRenderer.Application.TargetPath)" />
+      </Component>
+      <Component Id="ConfigExe">
+        <File Id="$(var.ProductName)Config.exe" Source="$(var.VitML.ImageRenderer.Config.TargetPath)" />
       </Component>
       <Component Id="NLogLib">
         <File Source="$(var.VitML.ImageRenderer.Application.TargetDir)NLog.dll" />
       </Component>
-      <Component Id="NLogFile">
+      <Component Id="NLog">
         <File Source="$(var.VitML.ImageRenderer.Application.TargetDir)nlog.txt" />
       </Component>
       <Component Id="Config">
