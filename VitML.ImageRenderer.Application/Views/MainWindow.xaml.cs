@@ -23,6 +23,36 @@ namespace VitML.ImageRenderer.App.Views
         public MainWindow()
         {
             InitializeComponent();
+
+            close2.MouseEnter += close2_MouseEnter;
+            close2.MouseLeave += close2_MouseLeave;
+            close2.MouseUp += close2_MouseUp;
+
+            this.MouseDown += MainWindow_MouseDown;
+        }
+
+        void MainWindow_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            if (e.ChangedButton == MouseButton.Left)
+            {
+                if(!close2.IsMouseOver)
+                    this.DragMove();
+            }
+        }
+
+        void close2_MouseUp(object sender, MouseButtonEventArgs e)
+        {
+            this.Close();
+        }
+
+        void close2_MouseLeave(object sender, MouseEventArgs e)
+        {
+            close2.Opacity = 0.0;
+        }
+
+        void close2_MouseEnter(object sender, MouseEventArgs e)
+        {
+            close2.Opacity = 0.6;
         }
 
         private void Window_Closed(object sender, EventArgs e)

@@ -20,5 +20,10 @@
             <Label Content="{Binding Player.FPS, FallbackValue=--}" HorizontalContentAlignment="Center" VerticalAlignment="Center" 
 				            FontWeight="Bold" FontSize="24" Margin="5,0,5,0" />
         </Grid>
+        <Grid x:Name="close2" Background="IndianRed" Width="Auto" Height="Auto" HorizontalAlignment="Right" VerticalAlignment="Top" 
+			            Opacity="0.0" Margin="5">
+            <Label Content="X" HorizontalContentAlignment="Center" VerticalAlignment="Center" 
+				            FontWeight="Bold" FontSize="24" Margin="5,0,5,0" />
+        </Grid>
     </Grid>
 </Window>

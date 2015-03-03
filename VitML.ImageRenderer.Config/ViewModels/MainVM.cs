@@ -86,7 +86,7 @@ namespace VitML.ImageRenderer.Config.ViewModels
 
         void Run(object x = null)
         {
-            Configuration.Start();
+            Configuration.Start();           
         }
 
         internal void Load(object x = null)
