@@ -9,7 +9,7 @@
     </connection>
 	<connection xsi:type="http3ring" name="peremoha">
       <dir>http://62.122.152.67:41428/live/</dir>
-	  <time>http://62.122.152.67:41429</time>
+	  <time>http://62.122.152.67:41429?valid=True</time>
     </connection>
   </connections>
   <storages>
@@ -23,7 +23,7 @@
 	<storage name="peremoha" connection="peremoha" />
   </storages>
   <instances>
-	<window enabled="true" title="LiveStream" showfps="true">
+	<window enabled="false" title="LiveStream" showfps="true">
 	  <player >
 		<render fps="0" cleanup="false" deleteimages="false" />
 		<source storage="kardachi" pull="true"/>

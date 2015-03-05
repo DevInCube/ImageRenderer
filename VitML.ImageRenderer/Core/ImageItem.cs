@@ -19,7 +19,10 @@ namespace VitML.ImageRenderer.Core
         public void Convert()
         {
             if (Image == null && ImageData != null)
+            {
                 Image = ImageHelper.ToImage(ImageData);
+                ImageData = null;
+            }
         }
 
         public override string ToString()

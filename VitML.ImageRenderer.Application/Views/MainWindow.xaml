@@ -25,5 +25,16 @@
             <Label Content="X" HorizontalContentAlignment="Center" VerticalAlignment="Center" 
 				            FontWeight="Bold" FontSize="24" Margin="5,0,5,0" />
         </Grid>
+        <Grid  Background="LightSkyBlue" Width="Auto" Height="Auto" HorizontalAlignment="Stretch" VerticalAlignment="Bottom" 
+			            Opacity="0.5" Margin="5">
+            <StackPanel Orientation="Horizontal">
+                <Label Content="{Binding Player.LoadCount}" HorizontalContentAlignment="Center" VerticalAlignment="Center" 
+				                FontWeight="Bold" FontSize="24" Margin="5,0,5,0" />
+                <Label Content="{Binding Player.ConvertCount}" HorizontalContentAlignment="Center" VerticalAlignment="Center" 
+				                FontWeight="Bold" FontSize="24" Margin="5,0,5,0" />
+                <Label Content="{Binding Player.RenderCount}" HorizontalContentAlignment="Center" VerticalAlignment="Center" 
+				                FontWeight="Bold" FontSize="24" Margin="5,0,5,0" />                
+            </StackPanel>
+        </Grid>
     </Grid>
 </Window>

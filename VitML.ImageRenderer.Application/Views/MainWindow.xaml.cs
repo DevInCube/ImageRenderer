@@ -38,6 +38,10 @@ namespace VitML.ImageRenderer.App.Views
                 if(!close2.IsMouseOver)
                     this.DragMove();
             }
+            else
+            {
+                //throw new Exception();//@test
+            }
         }
 
         void close2_MouseUp(object sender, MouseButtonEventArgs e)

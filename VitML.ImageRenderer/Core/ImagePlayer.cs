@@ -18,6 +18,7 @@ namespace VitML.ImageRenderer.Core
 {
     public class ImagePlayer : ObservableObject
     {
+
         Logger logger = LogManager.GetLogger("ImagePlayer");
 
         private bool useSourceFPS = false;
@@ -56,6 +57,10 @@ namespace VitML.ImageRenderer.Core
         private BackgroundWorker gcCleaner;
 
         private List<BackgroundWorker> workers = new List<BackgroundWorker>();
+
+        public int LoadCount { get { return loadItems.Count; } }
+        public int ConvertCount { get { return convertItems.Count; } }
+        public int RenderCount { get { return renderItems.Count; } }      
 
         public BitmapImage Image
         {
@@ -160,7 +165,7 @@ namespace VitML.ImageRenderer.Core
             useSourceFPS = (config.Render.FPS <= 0);
             if (!useSourceFPS)
                 frameTime = (int)Math.Floor(1000 / (double)config.Render.FPS * TimeSpan.TicksPerMillisecond);
-        }
+        }        
 
         void imagePuller_ProgressChanged(object sender, ProgressChangedEventArgs e)
         {
@@ -304,8 +309,9 @@ namespace VitML.ImageRenderer.Core
         void imageConverter_DoWork(object sender, DoWorkEventArgs e)
         {
             BackgroundWorker worker = (BackgroundWorker)sender;
+
             while (!worker.CancellationPending)
-            {
+            {                
                 ImageItem item = GetConvertItem();
                 item.Convert();
                 worker.ReportProgress(0, item);
@@ -324,6 +330,9 @@ namespace VitML.ImageRenderer.Core
         {
             Stopwatch sw = new Stopwatch();
             BackgroundWorker worker = (BackgroundWorker)sender;
+
+            //throw new Exception();//@test
+
             while (!worker.CancellationPending)
             {
                 ImageItem item;
@@ -343,6 +352,8 @@ namespace VitML.ImageRenderer.Core
                 int delayTime = (int)Math.Floor(showTime / (double)TimeSpan.TicksPerMillisecond);
                 if (delayTime > 0)
                     Thread.Sleep(delayTime);
+
+                //Thread.Sleep(500);//@test
             }
         }
 
@@ -357,6 +368,7 @@ namespace VitML.ImageRenderer.Core
         {
             Stopwatch sw = new Stopwatch();
             BackgroundWorker worker = (BackgroundWorker)sender;
+
             while (!worker.CancellationPending)
             {
                 ImageItem item;
@@ -408,6 +420,8 @@ namespace VitML.ImageRenderer.Core
             lock (loadLock)
             {
                 loadItems.Enqueue(item);
+                OnPropertyChanged("LoadCount");
+
                 Monitor.PulseAll(loadLock);
             }
         }
@@ -430,7 +444,10 @@ namespace VitML.ImageRenderer.Core
         {
             lock (convertLock)
             {
+
                 convertItems.Enqueue(item);
+                OnPropertyChanged("ConvertCount");
+
                 Monitor.PulseAll(convertLock);
             }
         }
@@ -454,7 +471,10 @@ namespace VitML.ImageRenderer.Core
         {
             lock (renderLock)
             {
+
                 renderItems.Enqueue(item);
+                OnPropertyChanged("RenderCount");
+
                 Monitor.PulseAll(renderLock);
             }
         }

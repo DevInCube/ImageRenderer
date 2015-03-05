@@ -6,7 +6,9 @@ using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
+using System.Windows.Media.Imaging;
 
 namespace VitML.ImageRenderer.Extensions
 {
@@ -46,34 +48,99 @@ namespace VitML.ImageRenderer.Extensions
             return (Image)b;
         }
 
+        public static BitmapSource ByteArrayToBitmapSource(byte[] bytes)
+        {
+            var stream = new MemoryStream(bytes);
+            return System.Windows.Media.Imaging.BitmapFrame.Create(stream);
+        }
+
+        public static BitmapImage ByteArrayToBitmapImage(byte[] bytes)
+        {
+            BitmapImage bImg = null;
+            try
+            {
+               System.Windows.Application.Current.Dispatcher.Invoke((Action)(() =>
+               {
+                   try
+                   {
+                       using (MemoryStream memoryStream = new MemoryStream(bytes))
+                       {
+                           bImg = new BitmapImage();
+                           bImg.BeginInit();
+                           bImg.StreamSource = new MemoryStream(memoryStream.ToArray());
+                           bImg.EndInit();
+                           bImg.Freeze();
+                       }
+                   }
+                   catch (Exception e1) { }
+               }));         
+            }
+            catch(Exception e2) { }
+            return bImg;
+        }
+
         public static System.Windows.Media.Imaging.BitmapImage ToImage(byte[] bytes)
         {
-            
-            using (Stream ms = new System.IO.MemoryStream(bytes))
+            try
             {
-                System.Windows.Media.Imaging.BitmapImage image = null;
-                try 
+                using (Stream ms = new System.IO.MemoryStream(bytes))
                 {
-                    System.Windows.Application.Current.Dispatcher.Invoke((Action)(() =>
+                    System.Windows.Media.Imaging.BitmapImage image = null;
+                    try
                     {
-                        sw.Reset();
-                        sw.Start();
-                        image = new System.Windows.Media.Imaging.BitmapImage();
-                        image.BeginInit();
-                        image.CacheOption = System.Windows.Media.Imaging.BitmapCacheOption.OnLoad;
-                        image.StreamSource = ms;
-                        image.EndInit();
-                        image.Freeze();
-                        //logger.Trace("Convert: " + sw.ElapsedTicks);
-                    }));
+                        System.Windows.Application.Current.Dispatcher.Invoke((Action)(() =>
+                        {
+                            try
+                            {
+                                sw.Reset();
+                                sw.Start();
+                                image = new System.Windows.Media.Imaging.BitmapImage();
+                                image.BeginInit();
+                                image.CacheOption = System.Windows.Media.Imaging.BitmapCacheOption.OnLoad;
+                                image.StreamSource = ms;
+                                image.EndInit();
+                                image.Freeze();
+                            }
+                            catch (Exception)
+                            {
+                                //
+                            }
+                            //logger.Trace("Convert: " + sw.ElapsedTicks);
+                        }));
+                    }
+                    catch (NullReferenceException)
+                    {
+                        //
+                    }
+                    //logger.Trace(sw.ElapsedTicks);
+                    return image;
                 }
-                catch (NullReferenceException)
-                {
-                    //
-                }
-                //logger.Trace(sw.ElapsedTicks);
-                return image;
             }
+            catch (Exception e)
+            {
+                //
+            }
+            return null;
         }
+
+        public static System.Windows.Media.Imaging.BitmapImage ToImageUnsafe(byte[] bytes)
+        {
+            System.Windows.Media.Imaging.BitmapImage image = null;
+            using (Stream ms = new System.IO.MemoryStream(bytes))
+            {                
+                System.Windows.Application.Current.Dispatcher.Invoke((Action)(() =>
+                {
+                    sw.Reset();
+                    sw.Start();
+                    image = new System.Windows.Media.Imaging.BitmapImage();
+                    image.BeginInit();
+                    image.CacheOption = System.Windows.Media.Imaging.BitmapCacheOption.OnLoad;
+                    image.StreamSource = ms;
+                    image.EndInit();
+                    image.Freeze();
+                }));
+            }
+            return image;
+        }             
     }
 }
