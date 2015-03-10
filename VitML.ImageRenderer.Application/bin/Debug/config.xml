@@ -30,7 +30,7 @@
 		<compress storage="compress" enabled="false" quality="0" />
 	  </player>
 	</window>
-	<window enabled="true" title="LiveStream2" showfps="true">
+	<window enabled="true" title="LiveStream2" showfps="true" x="100" y="100" width="500" height="450" showborder="false">
 	  <player >
 		<render fps="0" cleanup="false" deleteimages="false" />
 		<source storage="peremoha" pull="true"/>

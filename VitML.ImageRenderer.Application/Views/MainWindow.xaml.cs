@@ -29,6 +29,13 @@ namespace VitML.ImageRenderer.App.Views
             close2.MouseUp += close2_MouseUp;
 
             this.MouseDown += MainWindow_MouseDown;
+            this.DataContextChanged += MainWindow_DataContextChanged;
+        }
+
+        void MainWindow_DataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
+        {
+            ShadowWindow shadow = new ShadowWindow();
+            shadow.DataContext = this.DataContext;
         }
 
         void MainWindow_MouseDown(object sender, MouseButtonEventArgs e)
@@ -51,7 +58,7 @@ namespace VitML.ImageRenderer.App.Views
 
         void close2_MouseLeave(object sender, MouseEventArgs e)
         {
-            close2.Opacity = 0.0;
+            close2.Opacity = 0.01;
         }
 
         void close2_MouseEnter(object sender, MouseEventArgs e)

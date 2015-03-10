@@ -1,0 +1,14 @@
+﻿<Window x:Class="VitML.ImageRenderer.App.Views.ShadowWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="ShadowWindow" 
+        Top="{Binding WindowConfiguration.PosY, Mode=OneWay}"
+        Left="{Binding WindowConfiguration.PosX, Mode=OneWay}"
+        Height="{Binding  WindowConfiguration.Height, Mode=OneWay, FallbackValue=400}" 
+        Width="{Binding  WindowConfiguration.Width, Mode=OneWay, FallbackValue=400}"
+        ResizeMode="NoResize" WindowStyle="None">
+    <Grid Background="#333333">
+        <Label Foreground="White" Content="LOADING..." FontWeight="Bold" FontSize="16" 
+               VerticalAlignment="Center" HorizontalAlignment="Center"/>
+    </Grid>
+</Window>

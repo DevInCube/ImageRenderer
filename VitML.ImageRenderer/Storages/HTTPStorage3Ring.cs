@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -40,10 +41,19 @@ namespace VitML.ImageRenderer.Storages
             string testStr = null;
             try
             {
+                /*
+                byte[] data = File.ReadAllBytes("C:/Users/user/Desktop/test.jpeg");
+                if (IsValidImage(data))
+                {
+                    item.ImageData = data;
+                    item.Time = DateTime.Now.Ticks;
+                }
+                System.Threading.Thread.Sleep(100);
+                return item;*/
                 do
                 {
                     byte[] testBuf = client.DownloadData(timeUri);
-                    testStr = System.Text.Encoding.UTF8.GetString(testBuf);
+                    testStr = System.Text.Encoding.UTF8.GetString(testBuf);                    
                 } 
                 while (testStr.Equals("0"));
                 long time = 0;
@@ -56,6 +66,7 @@ namespace VitML.ImageRenderer.Storages
                     timer.Reset();
                     timer.Start();
                     byte[] imageBuf = client.DownloadData(imageUri);
+                    if (!IsValidImage(imageBuf)) return item;          
                     long elapsed = timer.ElapsedMilliseconds;
                     item.ImageData = imageBuf;
                     item.Time = time;
@@ -73,7 +84,25 @@ namespace VitML.ImageRenderer.Storages
             {
                 logger.Error("404 for {0}", testStr);
             }
+            catch (Exception e2)
+            {
+                logger.Error(e2.ToString());
+            }
             return item;
+        }
+
+        public static bool IsValidImage(byte[] bytes)
+        {
+            try
+            {
+                using (MemoryStream ms = new MemoryStream(bytes))
+                    Image.FromStream(ms);
+            }
+            catch (ArgumentException)
+            {
+                return false;
+            }
+            return true;
         }
 
         public override void Connect()

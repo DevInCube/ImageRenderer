@@ -58,6 +58,8 @@ namespace VitML.ImageRenderer.Core
 
         private List<BackgroundWorker> workers = new List<BackgroundWorker>();
 
+        private bool workersCrashed = false;
+
         public int LoadCount { get { return loadItems.Count; } }
         public int ConvertCount { get { return convertItems.Count; } }
         public int RenderCount { get { return renderItems.Count; } }      
@@ -82,6 +84,11 @@ namespace VitML.ImageRenderer.Core
         }
 
         public ImagePlayer()
+        {
+            //            
+        }
+
+        private void InitWorkers()
         {
             imagePuller = new BackgroundWorker
             {
@@ -141,6 +148,7 @@ namespace VitML.ImageRenderer.Core
             };
             gcCleaner.DoWork += gcCleaner_DoWork;
 
+            workers.Clear();
             workers.Add(imageLoader);
             workers.Add(imageConverter);
             workers.Add(imageRenderer);
@@ -152,6 +160,7 @@ namespace VitML.ImageRenderer.Core
         public void Setup(PlayerConfiguration config)
         {
             this.config = config;
+            InitWorkers();
             if (config.Source.DoPull)
                 workers.Add(imagePuller);
             if (config.Compress.IsEnabled)
@@ -165,6 +174,19 @@ namespace VitML.ImageRenderer.Core
             useSourceFPS = (config.Render.FPS <= 0);
             if (!useSourceFPS)
                 frameTime = (int)Math.Floor(1000 / (double)config.Render.FPS * TimeSpan.TicksPerMillisecond);
+
+            foreach(var w in workers)
+            {
+                w.RunWorkerCompleted += w_RunWorkerCompleted;
+            }
+        }
+
+        void w_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
+        {
+            if (e.Error != null)
+            {
+                (sender as BackgroundWorker).RunWorkerAsync();
+            }
         }        
 
         void imagePuller_ProgressChanged(object sender, ProgressChangedEventArgs e)
@@ -323,7 +345,14 @@ namespace VitML.ImageRenderer.Core
         {
             AddTime(DateTime.Now.Ticks);
             BitmapImage image = e.UserState as BitmapImage;
-            this.Image = image;
+            try
+            {
+                this.Image = image;
+            }
+            catch (Exception ex)
+            {
+                logger.Error("Image: {0}", ex.Message);
+            }
         }
 
         void imageRenderer_DoWork(object sender, DoWorkEventArgs e)

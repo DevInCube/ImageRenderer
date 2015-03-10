@@ -36,45 +36,9 @@ namespace VitML.ImageRenderer.App
             string confPath = Path.Combine(exD, "config.xml");
             content = File.ReadAllText(confPath);
 
-            Start();
-        }
-
-        private void Start()
-        {
-            winThread = new Thread(new ThreadStart(() =>
-            {
-                try
-                {                    
-                    Window[] wnds = Init();
-                    foreach (Window wnd in wnds)
-                        wnd.Closed += (s, e) =>
-                        {
-                            Dispatcher.CurrentDispatcher.BeginInvokeShutdown(DispatcherPriority.Background);
-                            Environment.Exit(0);
-                        };
-                    System.Windows.Threading.Dispatcher.Run();
-                }
-                catch (Exception tEx)
-                {                     
-                    Start();                    
-                }
-            }));
-            
-            winThread.SetApartmentState(ApartmentState.STA);
-            winThread.IsBackground = true;
-            winThread.Start();                 
-        }
-
-        private Window[] Init()
-        {            
             conf = Configuration.Parse(content);
             conf.Initialize();
             conf.Start();
-            List<Window> wnds = new List<Window>();
-            foreach (var ins in conf.Instances)
-                if (ins.Window != null)
-                    wnds.Add(ins.Window);
-            return wnds.ToArray();
         }
 
         void App_DispatcherUnhandledException(object sender, System.Windows.Threading.DispatcherUnhandledExceptionEventArgs e)

@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Text;
+using System.Windows.Threading;
 using System.Xml.Linq;
 using System.Xml.Serialization;
 using VitML.ImageRenderer.App.ViewModels;
@@ -95,7 +96,6 @@ namespace VitML.ImageRenderer.App.Models
             }            
         }
 
-        
     }    
 
     public class WindowConfiguration : ObservableObject
@@ -123,6 +123,8 @@ namespace VitML.ImageRenderer.App.Models
         public PlayerConfiguration Player { get; set; }
         [XmlIgnore]
         public MainWindow Window { get; set; }
+        [XmlIgnore]
+        public MainVM ViewModel { get; set; }        
 
         public WindowConfiguration()
         {
@@ -131,7 +133,7 @@ namespace VitML.ImageRenderer.App.Models
             ShowBorder = true;
             PosX = PosY = 50;
             Width = Height = 200;
-            Player = new PlayerConfiguration();
+            Player = new PlayerConfiguration();            
         }
 
         public void Initialize(IObjectProvider op)
@@ -143,37 +145,18 @@ namespace VitML.ImageRenderer.App.Models
 
         public void Start()
         {
-            if(Window!=null && Window.IsVisible)
-            {
-                Window.Close();
-            }
             Window = new MainWindow();
-            if (!ShowBorder)
+            ViewModel = new MainVM();
+            ViewModel.Setup(this);
+            Window.DataContext = ViewModel;
+            if (!this.ShowBorder)
             {
                 Window.WindowStyle = System.Windows.WindowStyle.None;
                 Window.AllowsTransparency = true;
                 Window.Background = System.Windows.Media.Brushes.Transparent;
             }
-            Window.Top = PosY;
-            Window.Left = PosX;
-            Window.Width = Width;
-            Window.Height = Height;
-            Window.LocationChanged += Window_LocationChanged;
-            Window.SizeChanged += Window_SizeChanged;
-            (Window.DataContext as MainVM).Setup(this);
+            Window.Closed += (se, ar) => { Environment.Exit(0); };
             Window.Show();
-        }
-
-        void Window_SizeChanged(object sender, System.Windows.SizeChangedEventArgs e)
-        {
-            Width = (int)Window.Width;
-            Height = (int)Window.Height;     
-        }
-
-        void Window_LocationChanged(object sender, EventArgs e)
-        {
-            PosX = (int)Window.Left;
-            PosY = (int)Window.Top;
         }
 
         public void Prepare(IObjectProvider op)

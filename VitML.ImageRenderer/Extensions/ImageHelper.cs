@@ -79,8 +79,11 @@ namespace VitML.ImageRenderer.Extensions
             return bImg;
         }
 
+        private static int testCount = 0;
+
         public static System.Windows.Media.Imaging.BitmapImage ToImage(byte[] bytes)
         {
+            //if (testCount++ > 10) { testCount = 0; throw new Exception("TestException"); }
             try
             {
                 using (Stream ms = new System.IO.MemoryStream(bytes))
@@ -92,8 +95,6 @@ namespace VitML.ImageRenderer.Extensions
                         {
                             try
                             {
-                                sw.Reset();
-                                sw.Start();
                                 image = new System.Windows.Media.Imaging.BitmapImage();
                                 image.BeginInit();
                                 image.CacheOption = System.Windows.Media.Imaging.BitmapCacheOption.OnLoad;
@@ -101,25 +102,14 @@ namespace VitML.ImageRenderer.Extensions
                                 image.EndInit();
                                 image.Freeze();
                             }
-                            catch (Exception)
-                            {
-                                //
-                            }
-                            //logger.Trace("Convert: " + sw.ElapsedTicks);
+                            catch (Exception) { }
                         }));
                     }
-                    catch (NullReferenceException)
-                    {
-                        //
-                    }
-                    //logger.Trace(sw.ElapsedTicks);
+                    catch (NullReferenceException) { }
                     return image;
                 }
             }
-            catch (Exception e)
-            {
-                //
-            }
+            catch (Exception e) { }
             return null;
         }
 

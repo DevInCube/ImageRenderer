@@ -14,6 +14,8 @@
                 <Button Content="LoadRunning" IsEnabled="{Binding LoadRunning, Mode=OneWay,FallbackValue=false}"/>
             </StackPanel>
             <Grid Background="#333333">
+                <Label Foreground="White" Content="LOADING..." FontWeight="Bold" FontSize="16" 
+                        VerticalAlignment="Center" HorizontalAlignment="Center"/>
                 <Image Source="{Binding Image}"/>
             </Grid>
         </DockPanel>

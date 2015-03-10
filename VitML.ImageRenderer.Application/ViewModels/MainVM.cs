@@ -4,7 +4,9 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Windows;
 using System.Windows.Input;
+using System.Windows.Threading;
 using VitML.ImageRenderer.App.Models;
 using VitML.ImageRenderer.Core;
 using VitML.ImageRenderer.Loaders;
@@ -15,9 +17,10 @@ namespace VitML.ImageRenderer.App.ViewModels
     public class MainVM : ObservableObject
     {
 
-        private ImagePlayer _Player = new ImagePlayer();
+        private ImagePlayer _Player;
         private bool _ShowFPS;
         private string _WindowTitle;
+        private WindowConfiguration _WindowConfiguration;
 
         public string WindowTitle
         {
@@ -38,15 +41,29 @@ namespace VitML.ImageRenderer.App.ViewModels
             }
         }
 
-        public ImagePlayer Player { get { return _Player; } }
+        public WindowConfiguration WindowConfiguration
+        {
+            get { return _WindowConfiguration; }
+            private set
+            {
+                _WindowConfiguration = value;
+                OnPropertyChanged("WindowConfiguration");
+            }
+        }
+
+        public ImagePlayer Player { 
+            get { return _Player; } 
+            set { _Player = value; } 
+        }
 
         public MainVM()
         {
-            //
+            Player = new ImagePlayer();
         }
 
         public void Setup(WindowConfiguration config)
         {
+            this.WindowConfiguration = config;
             this.WindowTitle = config.Title;
             this.ShowFPS = config.ShowFPS;
             Player.Setup(config.Player);
@@ -61,5 +78,6 @@ namespace VitML.ImageRenderer.App.ViewModels
         {
             Player.Stop();
         }
+
     }
 }

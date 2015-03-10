@@ -4,7 +4,11 @@
         xmlns:local="clr-namespace:VitML.ImageRenderer.App.Views"
         xmlns:conv="clr-namespace:VitML.ImageRenderer.App.Views.Converters"
         xmlns:vm="clr-namespace:VitML.ImageRenderer.App.ViewModels"
-        Title="{Binding WindowTitle}" Height="300" Width="300"
+        Title="{Binding WindowTitle}" 
+        Top="{Binding WindowConfiguration.PosY, Mode=TwoWay}"
+        Left="{Binding WindowConfiguration.PosX, Mode=TwoWay}"
+        Height="{Binding  WindowConfiguration.Height, Mode=TwoWay, FallbackValue=400}" 
+        Width="{Binding  WindowConfiguration.Width, Mode=TwoWay, FallbackValue=400}"
         Loaded="Window_Loaded"
         Closed="Window_Closed">
     <Window.DataContext>
@@ -13,7 +17,7 @@
     <Window.Resources>
         <conv:BoolToVis x:Key="BoolToVis"/>
     </Window.Resources>
-    <Grid>
+    <Grid>        
         <local:PlayerControl DataContext="{Binding Player}"/>
         <Grid Background="LightGray" Width="Auto" Height="Auto" HorizontalAlignment="Left" VerticalAlignment="Top" 
 			            Visibility="{Binding ShowFPS, Converter={StaticResource BoolToVis}}" Opacity="0.5" Margin="5">
@@ -26,7 +30,7 @@
 				            FontWeight="Bold" FontSize="24" Margin="5,0,5,0" />
         </Grid>
         <Grid  Background="LightSkyBlue" Width="Auto" Height="Auto" HorizontalAlignment="Stretch" VerticalAlignment="Bottom" 
-			            Opacity="0.5" Margin="5">
+			            Opacity="0.0" Margin="5">
             <StackPanel Orientation="Horizontal">
                 <Label Content="{Binding Player.LoadCount}" HorizontalContentAlignment="Center" VerticalAlignment="Center" 
 				                FontWeight="Bold" FontSize="24" Margin="5,0,5,0" />
