@@ -41,8 +41,9 @@ namespace VitML.ImageRenderer.Storages
         }
 
         public override ImageItem Load(string id)
-        {
+        {            
             ImageItem item = new ImageItem();
+            if (id == null) return item;
             try
             {
                 string fullPath = Path.Combine(this.watcher.Path, id);

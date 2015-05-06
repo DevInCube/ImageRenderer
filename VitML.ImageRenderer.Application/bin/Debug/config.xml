@@ -23,19 +23,12 @@
 	<storage name="peremoha" connection="peremoha" />
   </storages>
   <instances>
-	<window enabled="false" title="LiveStream" showfps="true">
+	<window enabled="true" title="LiveStream" showfps="true">
 	  <player >
-		<render fps="0" cleanup="false" deleteimages="false" />
-		<source storage="kardachi" pull="true"/>
+		<render fps="0" cleanup="false" deleteimages="true" />
+		<source storage="input" pull="true"/>
 		<compress storage="compress" enabled="false" quality="0" />
 	  </player>
-	</window>
-	<window enabled="true" title="LiveStream2" showfps="true" x="100" y="100" width="500" height="450" showborder="false">
-	  <player >
-		<render fps="0" cleanup="false" deleteimages="false" />
-		<source storage="peremoha" pull="true"/>
-		<compress storage="compress" enabled="false" quality="0" />
-	  </player>
-	</window>
+	</window>	
   </instances>
 </configuration>

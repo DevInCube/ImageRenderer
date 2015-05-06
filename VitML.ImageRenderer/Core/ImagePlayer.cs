@@ -240,6 +240,8 @@ namespace VitML.ImageRenderer.Core
                 var con = storage.Connection as HttpConnection3RingConfiguration;
                 st = new HTTPStorage3Ring(con.DirUri, con.TimeUri);
             }
+            if (st == null)
+                throw new Exception(string.Format("Invalid storage `{0}`", storage.Name));
             return st;
         }
 
